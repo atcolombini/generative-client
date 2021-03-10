@@ -1,13 +1,16 @@
 {
   "name": "generative-client",
   "version": "1.0.0",
-  "description": "A generative software project driven by an Arduino conected via serial port",
+  "description": "Electron app connected via serial port to an Arduino to generate graphics using p5.js",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "install": "electron-rebuild"
   },
-  "repository": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/atcolombini/generative-client.git"
+  },
   "keywords": [
     "P5",
     "Electron",

@@ -1,28 +1,19 @@
 'use strict';
 
-const SerialPort = require('serialport');
-const Readline = require('@serialport/parser-readline');
-
-let data = null;
-
 function setup()
 {
+	serialBegin();
 	// Create the canvas
 	createCanvas(windowWidth, windowHeight);
-
-    // Setup serial port to write lines to data
-    const port = new SerialPort("COM8", { baudRate: 9600 });
-    const lineStream = port.pipe(new Readline({delimiter:"\r\n"}));
-	lineStream.on("data", function(d) { data = d; });
 }
 
 function draw()
 {
 	let isOn = true;
 	
-	if(data != null)
+	if(serialData != null)
 	{
-		if(data === "off")
+		if(serialData === "off")
 		{
 			isOn = false;
 		}
@@ -42,5 +33,5 @@ function windowResized()
 
 function getFillColor(mouseIsPressed)
 {
-	return mouseIsPressed ? 0 : 255;
+	return mouseIsPressed ? 255 : 0;
 }
