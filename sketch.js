@@ -3,7 +3,6 @@
 const SerialPort = require('serialport');
 const Readline = require('@serialport/parser-readline');
 
-let port;
 let data = null;
 
 function setup()
@@ -12,14 +11,14 @@ function setup()
 	createCanvas(windowWidth, windowHeight);
 
     // Setup serial port to write lines to data
-    port = new SerialPort("COM8", { baudRate: 9600 });
+    const port = new SerialPort("COM8", { baudRate: 9600 });
     const lineStream = port.pipe(new Readline({delimiter:"\r\n"}));
 	lineStream.on("data", function(d) { data = d; });
 }
 
 function draw()
 {
-	var isOn = true;
+	let isOn = true;
 	
 	if(data != null)
 	{
@@ -29,9 +28,8 @@ function draw()
 		}
 	}
 
-	//let fillColor = getFillColor(isOn);
-
-	let fillColor = getFillColor(mouseIsPressed);
+	let fillColor = getFillColor(isOn);
+	//let fillColor = getFillColor(mouseIsPressed);
 
 	fill(fillColor);
 	ellipse(mouseX, mouseY, 80, 80);
