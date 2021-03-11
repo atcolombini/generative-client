@@ -2,13 +2,15 @@
 
 function setup()
 {
-	serialBegin();
+	Serial.begin(9600);
 	// Create the canvas
 	createCanvas(windowWidth, windowHeight);
 }
 
 function draw()
 {
+	let serialData = Serial.read();
+	
 	let isOn = true;
 	
 	if(serialData != null)

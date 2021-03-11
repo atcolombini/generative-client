@@ -2,12 +2,7 @@
 const { app, BrowserWindow, Menu } = require('electron')
 const path = require('path')
 
-require('electron-reload')(__dirname, {
-  electron: path.join(__dirname, 'node_modules', '.bin', 'electron')
-});
-
-// Keep a global reference of the window object, if you don't, the window will
-// be closed automatically when the JavaScript object is garbage collected.
+// Keep a global reference of the window object.
 let mainWindow
 
 function createWindow() {
@@ -15,6 +10,7 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
+    // Hide menu bar to keet the functionality (e.g. F11 to fullscreen)
     autoHideMenuBar: true,
     // fullscreen: true,
     webPreferences: {
@@ -25,8 +21,11 @@ function createWindow() {
   // and load the index.html of the app.
   mainWindow.loadFile('index.html')
 
-  // Open the DevTools.
-  mainWindow.webContents.openDevTools()
+  // Open the DevTools if started with "debug" argument
+  if(app.commandLine.getSwitchValue("debug"))
+  {
+    mainWindow.webContents.openDevTools()
+  }
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {

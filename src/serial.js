@@ -1,48 +1,70 @@
 
-//Serial Port Setup
+// Wrapper for serialport module
 
-// Lines read from the serial port will be placed here constantly
-let serialData = null;
-
-async function serialBegin()
+const Serial = new class
 {
-    const SerialPort = require('serialport');
-    const Readline = require('@serialport/parser-readline');
-    const KnownDevices = require('./devices');
-
-    let path = null;
-    
-    // Look for a known device in the serial ports
-    await SerialPort.list().then
-    (
-        ports => ports.forEach
-        (
-            function(p,index)
-            {
-                if (p.serialNumber != null)
-                {
-                    console.log("Device with serial " + p.serialNumber + " connected in port " + p.path);
-                    
-                    if (KnownDevices.includes(p.serialNumber))
-                    {
-                        path = p.path;
-                    }
-                }
-            }
-        ),
-        err => console.error(err)
-    )
-
-    if (path == null)
+    constructor()
     {
-        console.error("Couldn't find any known device connected.");
-        return;
+        // List of known devices
+        this.KnownDevices = require('./devices');
+        
+        // Lines read from the serial port will be placed here constantly
+        this.lastLine = null;
     }
 
-    // Setup serial port to read from the device and write lines to serialData
-    const port = new SerialPort(path, { baudRate: 9600 });
-    const lineStream = port.pipe(new Readline({ delimiter: "\r\n" }));
-    lineStream.on("data", function(d){ serialData = d; });
+    async begin(baudRate)
+    {
+        const SerialPort = require('serialport');
+        const Readline = require('@serialport/parser-readline');
+
+        let instance = this;
+        let path = null;
+        
+        // Look for a known device in the serial ports
+        await SerialPort.list().then
+        (
+            ports => ports.forEach
+            (
+                function(p,index)
+                {
+                    if (p.serialNumber != null)
+                    {
+                        let msg = " device with serial " + p.serialNumber + " connected in port " + p.path;
+                        
+                        if (instance.KnownDevices.includes(p.serialNumber))
+                        {
+                            path = p.path;
+                            console.log("Knwon" + msg);
+                        }
+                        else
+                        {
+                            console.log("Unknwon" + msg);
+                        }
+                    }
+                }
+            ),
+            err => console.error(err)
+        )
     
-    document.title += " - Connected to " + path;
-};
+        // If no known devices are connected, notify the user and leave
+        if (path == null)
+        {
+            let str = "Couldn't find any known device connected."
+            document.title += " - " + str;
+            console.error(str);
+            return;
+        }
+    
+        // Setup serial port to read from the device and write lines to serialData
+        const port = new SerialPort(path, { baudRate: baudRate });
+        const lineStream = port.pipe(new Readline({ delimiter: "\r\n" }));
+        lineStream.on("data", function(d){ instance.lastLine = d; });
+        
+        document.title += " - Connected to " + path;
+    }
+
+    read()
+    {
+        return this.lastLine;
+    }
+}
