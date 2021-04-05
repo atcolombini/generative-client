@@ -10,11 +10,13 @@ const Serial = new class
         
         // Lines read from the serial port will be placed here constantly
         this.lastLine = null;
+
+        this.SerialPort = require('serialport');
     }
 
     async begin(baudRate)
     {
-        const SerialPort = require('serialport');
+        const SerialPort = this.SerialPort;
         const Readline = require('@serialport/parser-readline');
 
         let instance = this;
@@ -58,13 +60,21 @@ const Serial = new class
         // Setup serial port to read from the device and write lines to serialData
         const port = new SerialPort(path, { baudRate: baudRate });
         const lineStream = port.pipe(new Readline({ delimiter: "\r\n" }));
-        lineStream.on("data", function(d){ instance.lastLine = d; });
+        lineStream.on("data", function(d) { instance.lastLine = d; });
         
         document.title += " - Connected to " + path;
     }
 
     read()
     {
+        
+
         return this.lastLine;
+    }
+
+    write(message)
+    {
+        const SerialPort = this.SerialPort;
+        
     }
 }
