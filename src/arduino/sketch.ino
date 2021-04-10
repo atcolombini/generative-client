@@ -135,7 +135,7 @@ void loop()
     ReadRGBSwitches();
     ReadEncoder();
     ReadDistanceSensor();
-    //ReadKeyPad();
+    ReadKeyPad();
 
     if(millis() - sendTime > sendPeriod)
     {
@@ -238,17 +238,16 @@ void ReadKeyPad()
             {
                 // keypress is active low so invert to high.
                 int val = !digitalRead(KEYS_ROW_PIN[row]);
-                Serial.println("Test " + String(col * row));
+                int selectedSwitch = col + row * 4;
+                //Serial.println("switch: " + String(col + row * 4));
 
                 if (val == HIGH)
                 {
-                    state.keypad |= (1 << col*row);
-                    
+                    state.keypad |= (1 << selectedSwitch);
                 }
                 else
                 {
-                    state.keypad &= ~(1 << col*row);
-
+                    state.keypad &= ~(1 << selectedSwitch);
                 }
             }
 

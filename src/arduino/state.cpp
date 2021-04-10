@@ -9,28 +9,29 @@ State::State()
 
 String State::Serialize()
 {
-    String state_string = "";
+    String state = "";
     // Photoresistor
-    state_string += String(photoresistor) + ",";
+    state += String(photoresistor) + ",";
 
     // Sound Sensor
-    state_string += String(sound) + ",";
+    state += String(sound) + ",";
 
     // RGB Switches
-    state_string += String(red) + ",";
-    state_string += String(green) + ",";
-    state_string += String(blue) + ",";
+    state += String(red) + ",";
+    state += String(green) + ",";
+    state += String(blue) + ",";
 
     // Encoder (delta)
-    state_string += String(encoder) + ",";
-    state_string += String(encoderButton) + ",";
+    state += String(encoder) + ",";
+    state += String(encoderButton) + ",";
 
     // Distance sensor
-    state_string += String(distance) + ",";
+    state += String(distance) + ",";
 
     // 4x4 Key Pad
+    state += String(keypad);
     
-    return state_string;
+    return state;
 /*
     String state_string = "{";
     // Photoresistor
