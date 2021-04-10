@@ -67,14 +67,14 @@ const Serial = new class
 
     read()
     {
-        
+        console.log(this.lastLine);
 
         return this.lastLine;
     }
 
-    write(message)
-    {
-        const SerialPort = this.SerialPort;
+    // write(message)
+    // {
+    //     const SerialPort = this.SerialPort;
         
-    }
+    // }
 }
