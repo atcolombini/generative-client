@@ -9,7 +9,7 @@ class State
 public:
     // Photoresistor
     // Normalized positive value [0, 1]
-    int photoresistor;
+    float photoresistor;
 
     // Sound Sensor
     // Normalized positive value [0, 1]
@@ -23,11 +23,12 @@ public:
 
     // Encoder (change from previous state)
     // Positive or negative value
-    int encoderDelta;
+    int encoder = 0;
+    bool encoderButton;
 
     // Distance sensor
     // Positive distance value (in centimeters?)
-    int distance;
+    float distance;
 
     enum KeyPadState
     {
@@ -55,6 +56,9 @@ public:
 
     State();
     String Serialize(void);
+
+private:
+    String Field(String, String);
 };
 
 #endif

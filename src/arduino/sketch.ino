@@ -20,6 +20,11 @@
 
 State state = State();
 
+const int sendPeriod = 100;
+int sendTime = 0;
+
+#define SOUND_SPEED 0.0343
+
 #pragma region PIN SETUP
 
 // Photoresistor - A0
@@ -42,11 +47,9 @@ State state = State();
 #define DISTANCE_TRIG_PIN 12
 #define DISTANCE_ECHO_PIN 13
 
-// 4x4 Button pad - 2 - 9
+// 4x4 Key pad - 2 - 9
 const byte KEYS_ROW_PIN[4] = {2, 3, 4, 5};
 const byte KEYS_COL_PIN[4] = {6, 7, 8, 9};
-unsigned int keysDebounceTime = 10;
-unsigned long keysStartTime = 0;
 
 /* OLD KEY PAD MANAGEMENT
 #define KEYS_ROW1_PIN 2
@@ -60,6 +63,19 @@ unsigned long keysStartTime = 0;
 #define KEYS_COL4_PIN 9
 */
 
+// Photoresistor variables
+int initialPhotoValue;
+
+// Encoder variables
+int encoderCurrentCLK;
+int encoderPrevCLK;
+unsigned long lastEncoderPress = 0;
+
+// Keypad variables
+unsigned int keysDebounceTime = 10;
+unsigned long keysStartTime = 0;
+
+
 #pragma endregion PIN SETUP
 
 void setup()
@@ -70,9 +86,12 @@ void setup()
 
     // Photoresistor
     pinMode(PHOTO_PIN, INPUT);
+    // Initial read for "environment calibration"
+    initialPhotoValue = analogRead(PHOTO_PIN);
 
     // Sound sensor
     pinMode(SOUND_PIN, INPUT);
+    // TODO Initial read for "environment calibration"
 
     // RGB Switches
     pinMode(RED_SWITCH_PIN, INPUT);
@@ -83,13 +102,15 @@ void setup()
     pinMode(ENCODER_SW_PIN, INPUT_PULLUP);
     pinMode(ENCODER_DT_PIN, INPUT);
     pinMode(ENCODER_CLK_PIN, INPUT);
+    state.encoder = 0;
+    encoderPrevCLK = digitalRead(ENCODER_CLK_PIN);
 
     // Distance Sensor
     pinMode(DISTANCE_TRIG_PIN, OUTPUT);
     pinMode(DISTANCE_ECHO_PIN, INPUT);
     
     // 4x4 Key pad
-    for(int i = 0; i < 4; i++)
+    for (int i = 0; i < 4; i++)
     {
         pinMode(KEYS_ROW_PIN[i], OUTPUT);
         pinMode(KEYS_COL_PIN[i], INPUT);
@@ -112,20 +133,20 @@ void loop()
     ReadPhotoresistor();
     ReadSoundSensor();
     ReadRGBSwitches();
-    //ReadEncoder();
-    //ReadDistanceSensor();
+    ReadEncoder();
+    ReadDistanceSensor();
     //ReadKeyPad();
 
-    SendState();
+    if(millis() - sendTime > sendPeriod)
+    {
+        SendState();
+        sendTime = millis();
+    }
 }
 
 void ReadPhotoresistor()
 {
-    /* If needed, this would go in setup() or its own function
-    // Initial read for "environment calibration"
-    // initialPhotoValue = analogRead(PHOTO_PIN);
-    */
-    state.photoresistor = analogRead(PHOTO_PIN);
+    state.photoresistor = analogRead(PHOTO_PIN) / (float) initialPhotoValue;
 }
 
 void ReadSoundSensor()
@@ -142,15 +163,55 @@ void ReadRGBSwitches()
 
 void ReadEncoder()
 {
-    static int previousValue;
-    int currentValue;
+    encoderCurrentCLK = digitalRead(ENCODER_CLK_PIN);
 
+    if (encoderCurrentCLK != encoderPrevCLK)
+    {
+        if (digitalRead(ENCODER_DT_PIN) != encoderCurrentCLK)
+        {
+            state.encoder--;
+        }
+        else
+        {
+            state.encoder++;
+        }
+    }
 
+    encoderPrevCLK = encoderCurrentCLK;
+
+    int button = digitalRead(ENCODER_SW_PIN);
+
+    if (button == LOW)
+    {
+		if (millis() - lastEncoderPress > 50)
+        {
+			state.encoderButton = true;
+		}
+
+        lastEncoderPress = millis();
+	}
+    else
+    {
+        state.encoderButton = false;
+    }
 }
 
 void ReadDistanceSensor()
 {
-    
+    // Set to low to setup a pulse
+    digitalWrite(DISTANCE_TRIG_PIN, LOW);
+    delayMicroseconds(2);
+    // Send 10 microsecond pulse
+    digitalWrite(DISTANCE_TRIG_PIN, HIGH);
+    delayMicroseconds(10);
+
+    digitalWrite(DISTANCE_TRIG_PIN, LOW);
+
+    // Read pulse on the receiver
+    unsigned long duration = pulseIn(DISTANCE_ECHO_PIN, HIGH);
+
+    // Calculate distance based on speed of sound
+    state.distance = (duration * SOUND_SPEED) / 2;
 }
 
 // Borrowed and adapted from Keypad library
@@ -161,26 +222,28 @@ void ReadKeyPad()
     if ((millis() - keysStartTime) > keysDebounceTime)
     {
 	    // Re-intialize the row pins. Allows sharing these pins with other hardware.
-        for(byte row = 0; row < 4; row++)
+        for (byte row = 0; row < 4; row++)
         {
             pinMode(KEYS_ROW_PIN[row], INPUT_PULLUP);
         }
 
-        for(byte col = 0; col < 4; col++)
+        for (byte col = 0; col < 4; col++)
         {
             pinMode(KEYS_COL_PIN[col], OUTPUT);
             
             // Begin column pulse output.
             digitalWrite(KEYS_COL_PIN[col], LOW);
 
-            for(byte row = 0; row < 4; row++)
+            for (byte row = 0; row < 4; row++)
             {
                 // keypress is active low so invert to high.
                 int val = !digitalRead(KEYS_ROW_PIN[row]);
-               
-                if(val == HIGH)
+                Serial.println("Test " + String(col * row));
+
+                if (val == HIGH)
                 {
                     state.keypad |= (1 << col*row);
+                    
                 }
                 else
                 {
