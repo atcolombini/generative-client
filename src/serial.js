@@ -1,5 +1,9 @@
 
-// Wrapper for serialport module
+// Wrapper for serialport module and Input 
+
+const { read } = require('original-fs');
+
+let Artifact = {};
 
 const Serial = new class
 {
@@ -60,21 +64,54 @@ const Serial = new class
         // Setup serial port to read from the device and write lines to serialData
         const port = new SerialPort(path, { baudRate: baudRate });
         const lineStream = port.pipe(new Readline({ delimiter: "\r\n" }));
-        lineStream.on("data", function(d) { instance.lastLine = d; });
+        lineStream.on("data", function(d)
+            {
+                instance.lastLine = d;
+            });
         
         document.title += " - Connected to " + path;
     }
 
     read()
     {
-        console.log(this.lastLine);
+        if(this.lastLine == null)
+        {
+            return;
+        }
 
-        return this.lastLine;
+        let values = this.lastLine.split(",");
+        let i;
+
+        Artifact.photocell = parseFloat(values[0]);
+        Artifact.sound = parseFloat(values[1]);
+
+        Artifact.red = values[2] == "1" ? true : false;
+        Artifact.green = values[3] == "1" ? true : false;
+        Artifact.blue = values[4] == "1" ? true : false;
+
+        Artifact.encoder = parseInt(values[5]);
+        Artifact.distance = parseFloat(values[6]);
+        Artifact.distanceActive = values[7] == "1" ? true : false;
+        Artifact.keypad = parseInt(values[8]);
     }
+}
 
-    // write(message)
-    // {
-    //     const SerialPort = this.SerialPort;
-        
-    // }
+const Key = 
+{
+    K1: 1 << 0,
+    K2: 1 << 1,
+    K3: 1 << 2,
+    K4: 1 << 3,
+    K5: 1 << 4,
+    K6: 1 << 5,
+    K7: 1 << 6,
+    K8: 1 << 7,
+    K9: 1 << 8,
+    K10: 1 << 9,
+    K11: 1 << 10,
+    K12: 1 << 11,
+    K13: 1 << 12,
+    K14: 1 << 13,
+    K15: 1 << 14,
+    K16: 1 << 15
 }

@@ -2,6 +2,8 @@
 const { app, BrowserWindow, Menu } = require('electron')
 const path = require('path')
 
+require('electron-reload')(__dirname);
+
 // Keep a global reference of the window object.
 let mainWindow
 
@@ -12,7 +14,7 @@ function createWindow() {
     height: 600,
     // Hide menu bar to keet the functionality (e.g. F11 to fullscreen)
     autoHideMenuBar: true,
-    // fullscreen: true,
+    //fullscreen: true,
     webPreferences: {
       nodeIntegration: true
     }

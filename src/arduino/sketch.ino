@@ -4,11 +4,12 @@
  * Input for the application, pins and breadboard positions (if any):
  *  - A0: Photoresistor, 50 - 5V, 52 - R - Gn
  *  - A1: Sound Sensor, 60+ e 
+ *  - A2: Distance activation button
  *  - A3: Red switch
  *  - A4: Green switch
  *  - A5: Blue switch
  *  - 2 - 9: 4x4 button pad
- *  - A2, 10, 11: Rotatry Encoder, 
+ *  - 10, 11: Rotatry Encoder
  *  - 12, 13: Distance Sensor
  *  
  * The sketch gathers the input values  in a State class, which is then
@@ -20,8 +21,10 @@
 
 State state = State();
 
-const int sendPeriod = 100;
+const int sendPeriod = 15;
 int sendTime = 0;
+
+const float lightThreshold = 0.6;
 
 #define SOUND_SPEED 0.0343
 
@@ -33,13 +36,15 @@ int sendTime = 0;
 // Sound Sensor - A1
 #define SOUND_PIN A1
 
+// Button - A2 (switch)
+#define DISTANCE_SWITCH_PIN A2
+
 // Switches (as digital inputs) - A3, A4, A5
 #define RED_SWITCH_PIN A3
 #define GREEN_SWITCH_PIN A4
 #define BLUE_SWITCH_PIN A5
 
-// Encoder - A2 (switch), 10, 11
-#define ENCODER_SW_PIN A2
+// Encoder - 10, 11
 #define ENCODER_DT_PIN 10
 #define ENCODER_CLK_PIN 11
 
@@ -48,20 +53,8 @@ int sendTime = 0;
 #define DISTANCE_ECHO_PIN 13
 
 // 4x4 Key pad - 2 - 9
-const byte KEYS_ROW_PIN[4] = {2, 3, 4, 5};
-const byte KEYS_COL_PIN[4] = {6, 7, 8, 9};
-
-/* OLD KEY PAD MANAGEMENT
-#define KEYS_ROW1_PIN 2
-#define KEYS_ROW2_PIN 3
-#define KEYS_ROW3_PIN 4
-#define KEYS_ROW4_PIN 5
-
-#define KEYS_COL1_PIN 6
-#define KEYS_COL2_PIN 7
-#define KEYS_COL3_PIN 8
-#define KEYS_COL4_PIN 9
-*/
+const byte KEYS_ROW_PIN[4] = { 2, 3, 4, 5 };
+const byte KEYS_COL_PIN[4] = { 6, 7, 8, 9 };
 
 // Photoresistor variables
 int initialPhotoValue;
@@ -69,12 +62,11 @@ int initialPhotoValue;
 // Encoder variables
 int encoderCurrentCLK;
 int encoderPrevCLK;
-unsigned long lastEncoderPress = 0;
+unsigned long lastDistanceSwitchPress = 0;
 
 // Keypad variables
 unsigned int keysDebounceTime = 10;
 unsigned long keysStartTime = 0;
-
 
 #pragma endregion PIN SETUP
 
@@ -99,13 +91,13 @@ void setup()
     pinMode(BLUE_SWITCH_PIN, INPUT);
     
     // Encoder
-    pinMode(ENCODER_SW_PIN, INPUT_PULLUP);
     pinMode(ENCODER_DT_PIN, INPUT);
     pinMode(ENCODER_CLK_PIN, INPUT);
-    state.encoder = 0;
+    state.encoderDelta = 0;
     encoderPrevCLK = digitalRead(ENCODER_CLK_PIN);
 
     // Distance Sensor
+    pinMode(DISTANCE_SWITCH_PIN, INPUT);
     pinMode(DISTANCE_TRIG_PIN, OUTPUT);
     pinMode(DISTANCE_ECHO_PIN, INPUT);
     
@@ -115,23 +107,21 @@ void setup()
         pinMode(KEYS_ROW_PIN[i], OUTPUT);
         pinMode(KEYS_COL_PIN[i], INPUT);
     }
-    /* OLD KEY PAD MANAGEMENT
-    pinMode(KEYS_ROW1_PIN, INPUT);
-    pinMode(KEYS_ROW2_PIN, INPUT);
-    pinMode(KEYS_ROW3_PIN, INPUT);
-    pinMode(KEYS_ROW4_PIN, INPUT);
-
-    pinMode(KEYS_COL1_PIN, INPUT);
-    pinMode(KEYS_COL2_PIN, INPUT);
-    pinMode(KEYS_COL3_PIN, INPUT);
-    pinMode(KEYS_COL4_PIN, INPUT);
-    */
 }
 
 void loop()
 {
     ReadPhotoresistor();
-    ReadSoundSensor();
+
+    if(state.photoresistor < lightThreshold)
+    {
+        ReadSoundSensor();
+    }
+    else
+    {
+        state.sound = 0;
+    }
+
     ReadRGBSwitches();
     ReadEncoder();
     ReadDistanceSensor();
@@ -178,40 +168,48 @@ void ReadEncoder()
     }
 
     encoderPrevCLK = encoderCurrentCLK;
-
-    int button = digitalRead(ENCODER_SW_PIN);
-
-    if (button == LOW)
-    {
-		if (millis() - lastEncoderPress > 50)
-        {
-			state.encoderButton = true;
-		}
-
-        lastEncoderPress = millis();
-	}
-    else
-    {
-        state.encoderButton = false;
-    }
 }
 
 void ReadDistanceSensor()
 {
-    // Set to low to setup a pulse
-    digitalWrite(DISTANCE_TRIG_PIN, LOW);
-    delayMicroseconds(2);
-    // Send 10 microsecond pulse
-    digitalWrite(DISTANCE_TRIG_PIN, HIGH);
-    delayMicroseconds(10);
+    // Debounced button press to activate teh distance sensor
+    int button = digitalRead(DISTANCE_SWITCH_PIN);
 
-    digitalWrite(DISTANCE_TRIG_PIN, LOW);
+    if (button == HIGH)
+    {
+		if (millis() - lastDistanceSwitchPress > 50)
+        {
+			state.distanceButton = true;
+		}
 
-    // Read pulse on the receiver
-    unsigned long duration = pulseIn(DISTANCE_ECHO_PIN, HIGH);
+        lastDistanceSwitchPress = millis();
+	}
+    else
+    {
+        state.distanceButton = false;
+    }
 
-    // Calculate distance based on speed of sound
-    state.distance = (duration * SOUND_SPEED) / 2;
+    if(state.distanceButton == true)
+    {
+        // Set to low to setup a pulse
+        digitalWrite(DISTANCE_TRIG_PIN, LOW);
+        delayMicroseconds(2);
+        // Send 10 microsecond pulse
+        digitalWrite(DISTANCE_TRIG_PIN, HIGH);
+        delayMicroseconds(10);
+
+        digitalWrite(DISTANCE_TRIG_PIN, LOW);
+
+        // Read pulse on the receiver
+        unsigned long duration = pulseIn(DISTANCE_ECHO_PIN, HIGH);
+
+        // Calculate distance based on speed of sound
+        state.distance = (duration * SOUND_SPEED) / 2;
+    }
+    else
+    {
+        state.distance = 0;
+    }
 }
 
 // Borrowed and adapted from Keypad library
@@ -241,6 +239,7 @@ void ReadKeyPad()
                 int selectedSwitch = col + row * 4;
                 //Serial.println("switch: " + String(col + row * 4));
 
+                // Set state using bit masks
                 if (val == HIGH)
                 {
                     state.keypad |= (1 << selectedSwitch);

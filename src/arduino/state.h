@@ -24,11 +24,14 @@ public:
     // Encoder (change from previous state)
     // Positive or negative value
     int encoder = 0;
-    bool encoderButton;
+    int encoderPrevious = 0;
+    int encoderDelta = 0;
 
     // Distance sensor
     // Positive distance value (in centimeters?)
     float distance;
+    // Activate distance sensor reading
+    bool distanceButton;
 
     // 4x4 Key Pad
     // Flags of active buttons
@@ -36,9 +39,6 @@ public:
 
     State();
     String Serialize(void);
-
-private:
-    String Field(String, String);
 };
 
 #endif

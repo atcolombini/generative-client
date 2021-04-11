@@ -9,9 +9,19 @@
   <script src="./src/serial.js"  language="javascript" type="text/javascript"></script>
   <script src="./src/sketch.js"  language="javascript" type="text/javascript"></script>
   <style>
-    body {
+    body, html {
+      height: 100%;
+      width: 100%;
       margin: 0;
       padding: 0;
+      background-color: #333333;
+    }
+    body {
+      display: grid;
+      grid-template-rows: auto;
+      justify-items: center;
+      align-items: center;
+
       -webkit-app-region: drag;
       user-select: none;
       -webkit-user-select: none;
