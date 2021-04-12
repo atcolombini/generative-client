@@ -109,7 +109,7 @@ function setup() {
   shapesProperties = {
   
     shapeTypes: [         // The array "shapeTypes" determine the shape of each slot. 
-      "tri",             // It contains 16 items that can be:
+      "quad",             // It contains 16 items that can be:
       "quad",             //   - quad
       "quad",             //   - tri
       "quad",             //   - circle
@@ -1162,17 +1162,22 @@ function keyPressed() {
   R  G  B  ->  z   x   c   ->  90   88   67
   */
     
-    if ( keyCode == 90)
-    {
-      keyR != keyR;
+    if (keyCode == 90) {
+      
+      if (keyR == false)     keyR = true;
+      else if (keyR == true) keyR = false;
     }
-    else if (keyCode == 88)
-    {
-      keyG != keyG;
+
+    else if (keyCode == 88) {
+
+      if (keyG == false)     keyG = true; 
+      else if (keyG == true) keyG = false; 
     }
-    else if (keyCode == 67)
-    {
-      keyB != keyB;
+
+    else if (keyCode == 67) {
+
+      if (keyB == false) keyB = true;
+      else if (keyB == true) keyB = false;
     }
   
   //print("Red is "+ keyR + " // Green is "+ keyG + " // Blue is "+ keyB);
