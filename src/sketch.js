@@ -33,6 +33,8 @@ var currentSelectedPieceID;
   const animationSpeedModificationStep = 0.01;
   const maxAnimationSpeed = 0.08;
 
+  var animationLoop = 0;
+
   var timer = 0;
   var timerFreezed = false;
 
@@ -312,7 +314,7 @@ function animate() {
 
       timerFreezed = true;          
       animationTempo = 0;
-
+      animationLoop++;
     } 
 
     else {     
@@ -547,6 +549,8 @@ function drawEllipse(positionX,positionY, shapeID){ //make so it can adapt to ne
   pop();
 }
 
+let triangleCurrentScale;
+
 function drawTriangle(positionX,positionY, shapeID){
   
   //let changeTriDirection;
@@ -565,11 +569,32 @@ function drawTriangle(positionX,positionY, shapeID){
   
   translate(positionX, positionY);
     
- //Animates Triangle (considers animationTempo + or -)
+  //Animates Triangle (considers animationTempo + or -)
+
+  if(animationTempo > 0)
   {
-    scale(1, animationTempo);
+    if(animationLoop % 2 == 0)
+    {
+      triangleCurrentScale = 1 - animationTempo * 2;
+    }
+    else
+    {
+      triangleCurrentScale = -1 + animationTempo * 2;
+    }
+  }
+  else
+  {
+    if(animationLoop % 2 == 0)
+    {
+      triangleCurrentScale = 1 + animationTempo * 2;
+    }
+    else
+    {
+      triangleCurrentScale = -1 - animationTempo * 2;
+    }
   }
 
+  scale (1, triangleCurrentScale);
   triangle(aX,aY,bX,bY,cX,cY);
   
   pop();
