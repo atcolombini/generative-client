@@ -4,10 +4,10 @@
  * Input for the application, pins and breadboard positions (if any):
  *  - A0: Photoresistor, 50 - 5V, 52 - R - Gn
  *  - A1: Sound Sensor, 60+ e 
- *  - A2: Distance activation button
- *  - A3: Red switch
- *  - A4: Green switch
- *  - A5: Blue switch
+ *  - 14: Distance activation button
+ *  - 15: Red switch
+ *  - 16: Green switch
+ *  - 17: Blue switch
  *  - 2 - 9: 4x4 button pad
  *  - 10, 11: Rotatry Encoder
  *  - 12, 13: Distance Sensor
@@ -36,13 +36,13 @@ const float lightThreshold = 0.6;
 // Sound Sensor - A1
 #define SOUND_PIN A1
 
-// Button - A2 (switch)
-#define DISTANCE_SWITCH_PIN A2
+// Button - 14 (switch)
+#define DISTANCE_SWITCH_PIN 14
 
-// Switches (as digital inputs) - A3, A4, A5
-#define RED_SWITCH_PIN A3
-#define GREEN_SWITCH_PIN A4
-#define BLUE_SWITCH_PIN A5
+// Switches (as digital inputs) - 15, 16, 17
+#define RED_SWITCH_PIN 15
+#define GREEN_SWITCH_PIN 16
+#define BLUE_SWITCH_PIN 17
 
 // Encoder - 10, 11
 #define ENCODER_DT_PIN 10

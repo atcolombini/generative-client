@@ -37,7 +37,7 @@
             "intelliSenseMode": "gcc-x64",
             "includePath": [
                 "D:\\Programs\\Arduino\\ArduinoIDE\\hardware\\arduino\\avr\\cores\\arduino",
-                "D:\\Programs\\Arduino\\ArduinoIDE\\hardware\\arduino\\avr\\variants\\standard",
+                "D:\\Programs\\Arduino\\ArduinoIDE\\hardware\\arduino\\avr\\variants\\mega",
                 "d:\\programs\\arduino\\arduinoide\\hardware\\tools\\avr\\lib\\gcc\\avr\\5.4.0\\include",
                 "d:\\programs\\arduino\\arduinoide\\hardware\\tools\\avr\\lib\\gcc\\avr\\5.4.0\\include-fixed",
                 "d:\\programs\\arduino\\arduinoide\\hardware\\tools\\avr\\avr\\include"
@@ -50,7 +50,7 @@
             "defines": [
                 "F_CPU=16000000L",
                 "ARDUINO=10810",
-                "ARDUINO_AVR_UNO",
+                "ARDUINO_AVR_MEGA2560",
                 "ARDUINO_ARCH_AVR",
                 "__DBL_MIN_EXP__=(-125)",
                 "__HQ_FBIT__=15",
@@ -480,7 +480,8 @@
                 "__QQ_IBIT__=0",
                 "__ATOMIC_ACQ_REL=4",
                 "__ATOMIC_RELEASE=3",
-                "__BUILTIN_AVR_FMUL=1"
+                "__BUILTIN_AVR_FMUL=1",
+                "USBCON"
             ]
         }
     ]
