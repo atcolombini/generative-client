@@ -736,31 +736,16 @@ function artifactInput()
     
     artifactEncoderInput();
 
+    artifactDistanceInput();
+
     artifactButtonMatrixInput();
   }
 }
 
-let ENCODER_PERIOD = 100;
-let encoderTime = 0;
-
 //Calls "modifyAnimationSpeed" 
 function artifactEncoderInput()
 {
-  if(encoderTime >= ENCODER_PERIOD)
-  {
-    if (Artifact.encoder > 0)
-    {
-      modifyAnimationSpeed(+animationSpeedModificationStep);
-    }
-    else if (Artifact.encoder < 0)
-    {
-      modifyAnimationSpeed(-animationSpeedModificationStep);
-    }
-
-    encoderTime = 0;
-  }
-
-  encoderTime += deltaTime;
+  modifyAnimationSpeed(Artifact.encoder);
 }
 
 let previousKey;
@@ -874,7 +859,34 @@ function artifactButtonMatrixInput()
 // Calls "modifyTotalAmountOfShapes"
 function artifactDistanceInput()
 {
-  
+  // The maximum distance is 20cm, the Artifact
+  // will give us data only when active.
+
+  if(Artifact.distanceActive)
+  {
+    let d = Artifact.distance;
+
+    if(d <= 4)
+    {
+      modifyTotalAmountOfShapes(1);
+    }
+    else if (d <= 8)
+    {
+      modifyTotalAmountOfShapes(2);
+    }
+    else if (d <= 12)
+    {
+      modifyTotalAmountOfShapes(4);
+    }
+    else if (d <= 16)
+    {
+      modifyTotalAmountOfShapes(8);
+    }
+    else if (d <= 20)
+    {
+      modifyTotalAmountOfShapes(16);
+    }
+  }
 }
 
 // Calls "modifyShapeType"

@@ -21,14 +21,11 @@ public:
     bool green;
     bool blue;
 
-    // Encoder (change from previous state)
-    // Positive or negative value
+    // Encoder accumulated value, can be positive or negative
     int encoder = 0;
-    int encoderPrevious = 0;
-    int encoderDelta = 0;
 
     // Distance sensor
-    // Positive distance value (in centimeters?)
+    // Positive distance value (in centimeters?) may need regulation
     float distance;
     // Activate distance sensor reading
     bool distanceButton;

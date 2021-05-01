@@ -22,9 +22,7 @@ String State::Serialize()
     state += String(blue) + ",";
 
     // Encoder (delta)
-    encoderDelta = encoder - encoderPrevious;
-    state += String(encoderDelta) + ",";
-    encoderPrevious = encoder;
+    state += String(encoder) + ",";
 
     // Distance sensor
     state += String(distance) + ",";

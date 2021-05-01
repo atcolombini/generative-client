@@ -12,6 +12,9 @@
  *  - 10, 11: Rotatry Encoder
  *  - 12, 13: Distance Sensor
  *  
+ * Outputs (LEDs):
+ *  - 
+ * 
  * The sketch gathers the input values  in a State class, which is then
  * serialized and sent over the serial port to the electron p5 application.
  * 
@@ -93,7 +96,6 @@ void setup()
     // Encoder
     pinMode(ENCODER_DT_PIN, INPUT);
     pinMode(ENCODER_CLK_PIN, INPUT);
-    state.encoderDelta = 0;
     encoderPrevCLK = digitalRead(ENCODER_CLK_PIN);
 
     // Distance Sensor
@@ -115,7 +117,7 @@ void loop()
 
     if(state.photoresistor < lightThreshold)
     {
-        ReadSoundSensor();
+            ReadSoundSensor();
     }
     else
     {
@@ -153,11 +155,16 @@ void ReadRGBSwitches()
 
 void ReadEncoder()
 {
+    int encoderDT = 0;
+
     encoderCurrentCLK = digitalRead(ENCODER_CLK_PIN);
 
-    if (encoderCurrentCLK != encoderPrevCLK)
+    // React to only 1 state change to avoid double count
+    if (encoderCurrentCLK != encoderPrevCLK && encoderCurrentCLK == 1)
     {
-        if (digitalRead(ENCODER_DT_PIN) != encoderCurrentCLK)
+        encoderDT = digitalRead(ENCODER_DT_PIN);
+
+        if (digitalRead(ENCODER_DT_PIN) != encoderCurrentCLK )
         {
             state.encoder--;
         }
@@ -166,7 +173,7 @@ void ReadEncoder()
             state.encoder++;
         }
     }
-
+    
     encoderPrevCLK = encoderCurrentCLK;
 }
 

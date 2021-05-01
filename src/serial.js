@@ -16,6 +16,9 @@ const Serial = new class
         this.lastLine = null;
 
         this.SerialPort = require('serialport');
+
+        // Stores the open port to read or write from it
+        this.port = null;
     }
 
     async begin(baudRate)
@@ -62,8 +65,8 @@ const Serial = new class
         }
     
         // Setup serial port to read from the device and write lines to serialData
-        const port = new SerialPort(path, { baudRate: baudRate });
-        const lineStream = port.pipe(new Readline({ delimiter: "\r\n" }));
+        this.port = new SerialPort(path, { baudRate: baudRate });
+        const lineStream = this.port.pipe(new Readline({ delimiter: "\r\n" }));
         lineStream.on("data", function(d)
             {
                 instance.lastLine = d;
@@ -72,6 +75,20 @@ const Serial = new class
         document.title += " - Connected to " + path;
     }
 
+    /*
+     * Reads the data from the serial input to the Artifact
+     * The read order matters because the string received is formatted in
+     * this order:
+     *  - photocell
+     *  - sound sensor
+     *  - red switch
+     *  - green switch
+     *  - blue switch
+     *  - encoder value
+     *  - distance value
+     *  - distance switch
+     *  - keypad pressed button flags
+     */
     read()
     {
         if(this.lastLine == null)
@@ -84,15 +101,27 @@ const Serial = new class
 
         Artifact.photocell = parseFloat(values[0]);
         Artifact.sound = parseFloat(values[1]);
-
+        
         Artifact.red = values[2] == "1" ? true : false;
         Artifact.green = values[3] == "1" ? true : false;
         Artifact.blue = values[4] == "1" ? true : false;
 
         Artifact.encoder = parseInt(values[5]);
+
         Artifact.distance = parseFloat(values[6]);
         Artifact.distanceActive = values[7] == "1" ? true : false;
+
         Artifact.keypad = parseInt(values[8]);
+        
+        console.log(Artifact.encoder);
+    }
+
+    /* Sends data to the serial port for the Artifact to update
+     * the state of the feedback outputs thet need it.
+     */
+    write()
+    {
+        
     }
 }
 
