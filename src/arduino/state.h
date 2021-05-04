@@ -7,6 +7,8 @@
 class State
 {
 public:
+
+    #pragma region Inputs
     // Photoresistor
     // Normalized positive value [0, 1]
     float photoresistor;
@@ -33,9 +35,32 @@ public:
     // 4x4 Key Pad
     // Flags of active buttons
     unsigned int keypad;
+    
+    #pragma endregion Inputs
+
+    #pragma region Outputs
+
+    int red_RGB;
+    int green_RGB;
+    int blue_RGB;
+
+    #pragma endregion Outputs
 
     State();
     String Serialize(void);
+    void Deserialize(String);
+};
+
+enum Color
+{
+    RED,
+    GREEN,
+    BLUE,
+    MAGENTA,
+    CYAN,
+    YELLOW,
+    WHITE,
+    NONE
 };
 
 #endif

@@ -112,16 +112,14 @@ const Serial = new class
         Artifact.distanceActive = values[7] == "1" ? true : false;
 
         Artifact.keypad = parseInt(values[8]);
-        
-        console.log(Artifact.encoder);
     }
 
     /* Sends data to the serial port for the Artifact to update
      * the state of the feedback outputs thet need it.
      */
-    write()
+    write(color)
     {
-        
+        this.port.write(color + "\n")
     }
 }
 
@@ -144,3 +142,15 @@ const Key =
     K15: 1 << 14,
     K16: 1 << 15
 }
+
+const Color = 
+{
+    RED: 0,
+    GREEN: 1,
+    BLUE: 2,
+    MAGENTA: 3,
+    CYAN: 4,
+    YELLOW: 5,
+    WHITE: 6,
+    NONE: 7
+};

@@ -2,6 +2,8 @@
 //*****Variables******/
 /********************/
 
+const { write } = require("original-fs");
+
 // General
 const shapesPerSide = 4;
 const canvasSize = 600;
@@ -739,6 +741,8 @@ function artifactInput()
     artifactDistanceInput();
 
     artifactButtonMatrixInput();
+
+    artifactRBGOutput();
   }
 }
 
@@ -910,6 +914,62 @@ function artifactRGBInput()
   keyR = Artifact.red;
   keyG = Artifact.green;
   keyB = Artifact.blue;
+}
+
+let previousKeyR = false;
+let previousKeyG = false;
+let previousKeyB = false;
+
+function artifactRBGOutput()
+{
+  // If keys have not changed, exit
+  if(keyR == previousKeyR &&
+     keyG == previousKeyG &&
+     keyB == previousKeyB)
+  {
+      return;
+  }
+console.log("keys changed, wrinting color to serial")
+  if (keyR == false &&  keyG == false &&  keyB == false)
+  { 
+    Serial.write(Color.NONE); 
+  }
+  else if (keyR == true &&  keyG == false &&  keyB == false)
+  {
+    Serial.write(Color.RED);
+  }
+  else if (keyR == true &&  keyG == true &&  keyB == false)
+  {
+    Serial.write(Color.YELLOW);
+  }
+  else if (keyR == true &&  keyG == false &&  keyB == true)
+  {
+    Serial.write(Color.MAGENTA);
+  }
+  else if (keyR == false &&  keyG == true &&  keyB == false)
+  {
+    Serial.write(Color.GREEN);
+  }
+  else if (keyR == false &&  keyG == true &&  keyB == true)
+  {
+    Serial.write(Color.CYAN);
+  }
+  else if (keyR == false &&  keyG == false &&  keyB == true)
+  {
+    Serial.write(Color.BLUE);
+  }
+  else if (keyR == true  &&  keyG == true  && keyB == true)
+  {
+    Serial.write(Color.WHITE);
+  }
+  else if(keyR == false && keyG == false && keyB == false)
+  {
+    Serial.write(Color.NONE);
+  }
+
+  previousKeyR = keyR;
+  previousKeyG = keyG;
+  previousKeyB = keyB;
 }
 
 /*** Desktop Controls ***/

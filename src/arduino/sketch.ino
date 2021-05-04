@@ -13,6 +13,7 @@
  *  - 12, 13: Distance Sensor
  *  
  * Outputs (LEDs):
+ *  - 44, 45, 46: PWM outputs respectively for the RGB LED
  *  - 
  * 
  * The sketch gathers the input values  in a State class, which is then
@@ -31,7 +32,7 @@ const float lightThreshold = 0.6;
 
 #define SOUND_SPEED 0.0343
 
-#pragma region PIN SETUP
+#pragma region PIN SETUP IN
 
 // Photoresistor - A0
 #define PHOTO_PIN A0
@@ -71,13 +72,29 @@ unsigned long lastDistanceSwitchPress = 0;
 unsigned int keysDebounceTime = 10;
 unsigned long keysStartTime = 0;
 
-#pragma endregion PIN SETUP
+#pragma endregion PIN SETUP IN
+
+#pragma region PIN SETUP OUT
+
+#define RED_RGB 44
+#define GREEN_RGB 45
+#define BLUE_RGB 46
+
+const byte PHOTO_LED[3] = { };
+const byte SOUND_LED[3] = { };
+const byte SOUND_END_LED[2] = { };
+
+const byte DISTANCE_LED[5] = { };
+
+const byte ENCODER_LED[8] = { };
+
+#pragma endregion PIN SETUP OUT
 
 void setup()
 {
     Serial.begin(9600);
 
-    // Pins setup
+    // Input Pins Setup
 
     // Photoresistor
     pinMode(PHOTO_PIN, INPUT);
@@ -109,10 +126,18 @@ void setup()
         pinMode(KEYS_ROW_PIN[i], OUTPUT);
         pinMode(KEYS_COL_PIN[i], INPUT);
     }
+
+    // Output Pins Setup
+    pinMode(RED_RGB, OUTPUT);
+    pinMode(GREEN_RGB, OUTPUT);
+    pinMode(BLUE_RGB, OUTPUT);
 }
 
 void loop()
 {
+
+    // Read Inputs
+
     ReadPhotoresistor();
 
     if(state.photoresistor < lightThreshold)
@@ -129,12 +154,26 @@ void loop()
     ReadDistanceSensor();
     ReadKeyPad();
 
+    // Update outputs
+
+    // Read Serial
+    
+    if(Serial.available() > 0)
+    {
+        ReceiveState();
+        SetRGBColor();
+    }
+    
+    // Send state update 
+
     if(millis() - sendTime > sendPeriod)
     {
         SendState();
         sendTime = millis();
     }
 }
+
+#pragma region Inputs
 
 void ReadPhotoresistor()
 {
@@ -264,6 +303,30 @@ void ReadKeyPad()
 
         keysStartTime = millis();
     }
+}
+
+#pragma endregion Inputs
+
+#pragma region Outputs
+
+void SetRGBColor()
+{
+    analogWrite(RED_RGB, state.red_RGB);
+    analogWrite(GREEN_RGB, state.green_RGB);
+    analogWrite(BLUE_RGB, state.blue_RGB);
+}
+
+void DistanceLEDs(bool isOn)
+{
+    
+}
+
+#pragma endregion Outputs
+
+void ReceiveState()
+{
+    String data = Serial.readStringUntil('\n');
+    state.Deserialize(data);
 }
 
 void SendState()
