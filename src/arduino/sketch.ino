@@ -80,13 +80,13 @@ unsigned long keysStartTime = 0;
 #define GREEN_RGB 45
 #define BLUE_RGB 46
 
-const byte PHOTO_LED[3] = { };
-const byte SOUND_LED[3] = { };
-const byte SOUND_END_LED[2] = { };
+const byte PHOTO_LED[3] = { 22, 23, 24 };
+const byte SOUND_LED[3] = { 25, 26, 27};
+const byte SOUND_END_LED[2] = { 28, 29 };
 
-const byte DISTANCE_LED[5] = { };
+const byte ENCODER_LED[8] = { 30, 31, 32, 33, 34, 35, 36, 37 };
 
-const byte ENCODER_LED[8] = { };
+const byte DISTANCE_LED[5] = { 38, 39, 40, 41, 42 };
 
 #pragma endregion PIN SETUP OUT
 
@@ -128,9 +128,40 @@ void setup()
     }
 
     // Output Pins Setup
+
     pinMode(RED_RGB, OUTPUT);
     pinMode(GREEN_RGB, OUTPUT);
     pinMode(BLUE_RGB, OUTPUT);
+
+    // Photoresistor LEDs (always on?)
+    for (int i = 0; i < 3; i++)
+    {
+        pinMode(PHOTO_LED[i], OUTPUT);
+    }
+
+    // Sound sensor LEDs (on when the photo is covered)
+    for (int i = 0; i < 3; i++)
+    {
+        pinMode(SOUND_LED[i], OUTPUT);
+    }
+
+    // Sound sensor LEDs at the end
+    for (int i = 0; i < 2; i++)
+    {
+        pinMode(SOUND_END_LED[i], OUTPUT);
+    }
+
+    // Encoder LEDs (started sequentially)
+    for (int i = 0; i < 8; i++)
+    {
+        pinMode(ENCODER_LED[i], OUTPUT);
+    }
+
+    // Distance LEDs
+    for (int i = 0; i < 5; i++)
+    {
+        pinMode(DISTANCE_LED[i], OUTPUT);
+    }
 }
 
 void loop()
@@ -155,6 +186,8 @@ void loop()
     ReadKeyPad();
 
     // Update outputs
+
+    DistanceLEDs();
 
     // Read Serial
     
@@ -316,9 +349,13 @@ void SetRGBColor()
     analogWrite(BLUE_RGB, state.blue_RGB);
 }
 
-void DistanceLEDs(bool isOn)
+void DistanceLEDs()
 {
     
+    for (int i = 0; i < 5; i++)
+    {
+        digitalWrite(DISTANCE_LED[i], state.distanceButton ? HIGH : LOW);
+    }
 }
 
 #pragma endregion Outputs
