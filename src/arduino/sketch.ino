@@ -80,13 +80,18 @@ unsigned long keysStartTime = 0;
 #define GREEN_RGB 45
 #define BLUE_RGB 46
 
-const byte PHOTO_LED[3] = { 22, 23, 24 };
-const byte SOUND_LED[3] = { 25, 26, 27};
-const byte SOUND_END_LED[2] = { 28, 29 };
+#define PHOTO_LED_COUNT 3
+const byte PHOTO_LED[PHOTO_LED_COUNT] = { 22, 23, 24 };
+#define SOUND_LED_COUNT 3
+const byte SOUND_LED[SOUND_LED_COUNT] = { 25, 26, 27};
+#define SOUND_END_LED_COUNT 2
+const byte SOUND_END_LED[SOUND_END_LED_COUNT] = { 28, 29 };
 
-const byte ENCODER_LED[8] = { 30, 31, 32, 33, 34, 35, 36, 37 };
+#define ENCODER_LED_COUNT 8
+const byte ENCODER_LED[ENCODER_LED_COUNT] = { 30, 31, 32, 33, 34, 35, 36, 37 };
 
-const byte DISTANCE_LED[5] = { 38, 39, 40, 41, 42 };
+#define DISTANCE_LED_COUNT 4
+const byte DISTANCE_LED[DISTANCE_LED_COUNT] = { 38, 39, 40, 41 };
 
 #pragma endregion PIN SETUP OUT
 
@@ -134,31 +139,31 @@ void setup()
     pinMode(BLUE_RGB, OUTPUT);
 
     // Photoresistor LEDs (always on?)
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < PHOTO_LED_COUNT; i++)
     {
         pinMode(PHOTO_LED[i], OUTPUT);
     }
 
     // Sound sensor LEDs (on when the photo is covered)
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < SOUND_LED_COUNT; i++)
     {
         pinMode(SOUND_LED[i], OUTPUT);
     }
 
     // Sound sensor LEDs at the end
-    for (int i = 0; i < 2; i++)
+    for (int i = 0; i < SOUND_END_LED_COUNT; i++)
     {
         pinMode(SOUND_END_LED[i], OUTPUT);
     }
 
     // Encoder LEDs (started sequentially)
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < ENCODER_LED_COUNT; i++)
     {
         pinMode(ENCODER_LED[i], OUTPUT);
     }
 
     // Distance LEDs
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < DISTANCE_LED_COUNT; i++)
     {
         pinMode(DISTANCE_LED[i], OUTPUT);
     }
@@ -187,7 +192,7 @@ void loop()
 
     // Update outputs
 
-    DistanceLEDs();
+    TestLEDs();
 
     // Read Serial
     
@@ -349,12 +354,34 @@ void SetRGBColor()
     analogWrite(BLUE_RGB, state.blue_RGB);
 }
 
-void DistanceLEDs()
+void TestLEDs()
 {
-    
-    for (int i = 0; i < 5; i++)
+    byte value = state.distanceButton ? HIGH : LOW;
+    //digitalWrite(35, HIGH);
+
+    for (int i = 0; i < PHOTO_LED_COUNT; i++)
     {
-        digitalWrite(DISTANCE_LED[i], state.distanceButton ? HIGH : LOW);
+        digitalWrite(PHOTO_LED[i], value);
+    }
+
+    for (int i = 0; i < SOUND_LED_COUNT; i++)
+    {
+        digitalWrite(SOUND_LED[i], value);
+    }
+
+    for (int i = 0; i < SOUND_END_LED_COUNT; i++)
+    {
+        digitalWrite(SOUND_END_LED[i], value);
+    }
+
+    for (int i = 0; i < ENCODER_LED_COUNT; i++)
+    {
+        digitalWrite(ENCODER_LED[i], value);
+    }
+
+    for (int i = 0; i < DISTANCE_LED_COUNT; i++)
+    {
+        digitalWrite(DISTANCE_LED[i], value);
     }
 }
 

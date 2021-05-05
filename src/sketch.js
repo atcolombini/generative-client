@@ -929,7 +929,7 @@ function artifactRBGOutput()
   {
       return;
   }
-console.log("keys changed, wrinting color to serial")
+
   if (keyR == false &&  keyG == false &&  keyB == false)
   { 
     Serial.write(Color.NONE); 
