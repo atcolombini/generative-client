@@ -12,6 +12,7 @@ public:
     // Photoresistor
     // Normalized positive value [0, 1]
     float photoresistor;
+    byte photoOut;
 
     // Sound Sensor
     // Normalized positive value [0, 1]
@@ -31,6 +32,7 @@ public:
     float distance;
     // Activate distance sensor reading
     bool distanceButton;
+    byte distanceOut;
 
     // 4x4 Key Pad
     // Flags of active buttons

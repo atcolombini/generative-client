@@ -28,8 +28,15 @@ State state = State();
 const int sendPeriod = 15;
 int sendTime = 0;
 
-const float lightThreshold = 0.6;
+const unsigned long interval = 50;
 
+// Time management
+unsigned long deltaTime = 0;
+unsigned long currentMillis = 0;
+unsigned long preMillis = 0;
+
+// Constants
+const float lightThreshold = 0.6f;
 #define SOUND_SPEED 0.0343
 
 #pragma region PIN SETUP IN
@@ -92,6 +99,7 @@ const byte ENCODER_LED[ENCODER_LED_COUNT] = { 30, 31, 32, 33, 34, 35, 36, 37 };
 
 #define DISTANCE_LED_COUNT 4
 const byte DISTANCE_LED[DISTANCE_LED_COUNT] = { 38, 39, 40, 41 };
+
 
 #pragma endregion PIN SETUP OUT
 
@@ -171,6 +179,8 @@ void setup()
 
 void loop()
 {
+    currentMillis = millis();
+    deltaTime = currentMillis - preMillis;
 
     // Read Inputs
 
@@ -178,7 +188,7 @@ void loop()
 
     if(state.photoresistor < lightThreshold)
     {
-            ReadSoundSensor();
+        ReadSoundSensor();
     }
     else
     {
@@ -192,7 +202,7 @@ void loop()
 
     // Update outputs
 
-    TestLEDs();
+    UpdateOutputs();
 
     // Read Serial
     
@@ -204,11 +214,13 @@ void loop()
     
     // Send state update 
 
-    if(millis() - sendTime > sendPeriod)
+    if(currentMillis - sendTime > sendPeriod)
     {
         SendState();
-        sendTime = millis();
+        sendTime = currentMillis;
     }
+
+    preMillis = currentMillis;
 }
 
 #pragma region Inputs
@@ -216,6 +228,8 @@ void loop()
 void ReadPhotoresistor()
 {
     state.photoresistor = analogRead(PHOTO_PIN) / (float) initialPhotoValue;
+    
+    state.photoOut = state.photoresistor < lightThreshold ? HIGH : LOW;
 }
 
 void ReadSoundSensor()
@@ -261,12 +275,12 @@ void ReadDistanceSensor()
 
     if (button == HIGH)
     {
-		if (millis() - lastDistanceSwitchPress > 50)
+		if (currentMillis - lastDistanceSwitchPress > 50)
         {
 			state.distanceButton = true;
 		}
 
-        lastDistanceSwitchPress = millis();
+        lastDistanceSwitchPress = currentMillis;
 	}
     else
     {
@@ -301,7 +315,7 @@ void ReadDistanceSensor()
 void ReadKeyPad()
 {
     // Limit how often the keypad is scanned. This makes the loop() run 10 times as fast.
-    if ((millis() - keysStartTime) > keysDebounceTime)
+    if ((currentMillis - keysStartTime) > keysDebounceTime)
     {
 	    // Re-intialize the row pins. Allows sharing these pins with other hardware.
         for (byte row = 0; row < 4; row++)
@@ -339,7 +353,7 @@ void ReadKeyPad()
             pinMode(KEYS_COL_PIN[col], INPUT);
         }
 
-        keysStartTime = millis();
+        keysStartTime = currentMillis;
     }
 }
 
@@ -354,34 +368,44 @@ void SetRGBColor()
     analogWrite(BLUE_RGB, state.blue_RGB);
 }
 
-void TestLEDs()
+void UpdateOutputs()
 {
-    byte value = state.distanceButton ? HIGH : LOW;
-    //digitalWrite(35, HIGH);
+    UpdateDistanceLEDs();
 
-    for (int i = 0; i < PHOTO_LED_COUNT; i++)
+}
+
+float currentDistanceLEDs = 0;
+float distanceLEDsTime = 0;
+
+void UpdateDistanceLEDs()
+{
+    if(state.distanceButton)
     {
-        digitalWrite(PHOTO_LED[i], value);
+        distanceLEDsTime += deltaTime;
+
+        Serial.println(distanceLEDsTime);
+
+        if(distanceLEDsTime >= interval)
+        {
+            distanceLEDsTime = 0;
+            currentDistanceLEDs = constrain(currentDistanceLEDs + 1, 0, DISTANCE_LED_COUNT);
+            SetLEDGroup(DISTANCE_LED, currentDistanceLEDs, state.distanceButton);
+        }
     }
-
-    for (int i = 0; i < SOUND_LED_COUNT; i++)
+    else
     {
-        digitalWrite(SOUND_LED[i], value);
+        currentDistanceLEDs = 0;
+        distanceLEDsTime = 0;
+        
+        SetLEDGroup(DISTANCE_LED, DISTANCE_LED_COUNT, LOW);
     }
-
-    for (int i = 0; i < SOUND_END_LED_COUNT; i++)
+}
+                                                                                    
+void SetLEDGroup(const byte* array, int count, byte state)
+{
+    for(int i = 0; i < count; i++)
     {
-        digitalWrite(SOUND_END_LED[i], value);
-    }
-
-    for (int i = 0; i < ENCODER_LED_COUNT; i++)
-    {
-        digitalWrite(ENCODER_LED[i], value);
-    }
-
-    for (int i = 0; i < DISTANCE_LED_COUNT; i++)
-    {
-        digitalWrite(DISTANCE_LED[i], value);
+        digitalWrite(array[i], state);
     }
 }
 
