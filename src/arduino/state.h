@@ -3,6 +3,7 @@
 #define STATE_H
 
 #include "Arduino.h"
+#include "string.h"
 
 enum Color
 {
@@ -65,8 +66,7 @@ public:
     #pragma endregion Outputs
 
     State();
-    String Serialize(void);
-
+    void WriteState();
     void ReadState();
     void DeserializeColor(Color);
 };

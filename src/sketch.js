@@ -436,14 +436,14 @@ function selectShape (shapeID){
     shapesProperties.isShapeSelected[shapeID] = true;    
     currentSelectedPieceID = shapeID;
 
-    Artifact.isShapeSelected = true;
+    ArtifactOutput.isShapeSelected = true;
   }
   
   else if (shapesProperties.isShapeSelected[shapeID] == true) {    
     unselectAllShapes(shapeID);
     currentSelectedPieceID = -1;
     
-    Artifact.isShapeSelected = false;
+    ArtifactOutput.isShapeSelected = false;
   }    
 
   Serial.write();
@@ -770,7 +770,7 @@ function artifactButtonMatrixInput()
 {
   // Do not execute if the keypad has not been pressed
   let currentKey = Artifact.keypad;
-  if(currentKey != 0 && currentKey != previousKey)
+  if(currentKey != 0 && !isNaN(currentKey) && currentKey != previousKey)
   {
     console.log(currentKey);
 
@@ -937,39 +937,39 @@ function artifactRBGOutput()
 
   if (keyR == false &&  keyG == false &&  keyB == false)
   { 
-    Artifact.color = Color.NONE;
+    ArtifactOutput.color = Color.NONE;
   }
   else if (keyR == true &&  keyG == false &&  keyB == false)
   {
-    Artifact.color = Color.RED;
+    ArtifactOutput.color = Color.RED;
   }
   else if (keyR == true &&  keyG == true &&  keyB == false)
   {
-    Artifact.color = Color.YELLOW;
+    ArtifactOutput.color = Color.YELLOW;
   }
   else if (keyR == true &&  keyG == false &&  keyB == true)
   {
-    Artifact.color = Color.MAGENTA;
+    ArtifactOutput.color = Color.MAGENTA;
   }
   else if (keyR == false &&  keyG == true &&  keyB == false)
   {
-    Artifact.color = Color.GREEN;
+    ArtifactOutput.color = Color.GREEN;
   }
   else if (keyR == false &&  keyG == true &&  keyB == true)
   {
-    Artifact.color = Color.CYAN;
+    ArtifactOutput.color = Color.CYAN;
   }
   else if (keyR == false &&  keyG == false &&  keyB == true)
   {
-    Artifact.color = Color.BLUE;
+    ArtifactOutput.color = Color.BLUE;
   }
   else if (keyR == true  &&  keyG == true  && keyB == true)
   {
-    Artifact.color = Color.WHITE;
+    ArtifactOutput.color = Color.WHITE;
   }
   else if(keyR == false && keyG == false && keyB == false)
   {
-    Artifact.color = Color.NONE;
+    ArtifactOutput.color = Color.NONE;
   }
 
   Serial.write();

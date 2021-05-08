@@ -35,8 +35,6 @@ State state = State();
 const int sendPeriod = 30;
 int sendTime = 0;
 
-#define SOUND_SPEED 0.0343
-
 // General time management
 unsigned long deltaTime = 0;
 unsigned long currentMillis = 0;
@@ -113,10 +111,12 @@ int encoderCurrentCLK;
 int encoderPrevCLK;
 
 // Distance sensor variables
+#define SOUND_SPEED 0.0343
 unsigned long lastDistanceSwitchPress = 0;
 movingAvg distanceSensor(10);
 int distanceLEDsOn = 0;
 unsigned long distanceOnTime = 0;
+
 
 // Keypad variables
 unsigned int keysDebounceTime = 10;
@@ -226,7 +226,7 @@ void loop()
     
     if(Serial.available() > 0)
     {
-        ReceiveState();
+        state.ReadState();
         SetRGBColor();
     }
     
@@ -234,7 +234,7 @@ void loop()
 
     if(currentMillis - sendTime > sendPeriod)
     {
-        SendState();
+        state.WriteState();
         sendTime = currentMillis;
     }
 
@@ -505,13 +505,3 @@ void SetLEDGroupToValue(const byte* array, int count, int value)
 }
 
 #pragma endregion Outputs
-
-void ReceiveState()
-{
-    state.ReadState();
-}
-
-void SendState()
-{
-    Serial.println(state.Serialize());
-}

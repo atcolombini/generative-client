@@ -126,9 +126,10 @@ const Serial = new class
 
         let payload = "";
 
-        payload += Artifact.color + ",";
-        payload += (Artifact.shapeSelected ? 1 : 0);
+        payload += ArtifactOutput.color + ",";
+        payload += (ArtifactOutput.isShapeSelected ? 1 : 0);
 
+        console.log(payload);
         this.port.write(payload);
     }
 }
@@ -164,3 +165,9 @@ const Color =
     WHITE: 6,
     NONE: 7
 };
+
+let ArtifactOutput =
+{
+    color: Color.WHITE,
+    isShapeSelected: false,
+}

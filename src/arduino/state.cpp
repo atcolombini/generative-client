@@ -7,43 +7,32 @@ State::State()
 {
 }
 
-String State::Serialize()
+void State::WriteState()
 {
-    String state = "";
-    // Photoresistor
-    state += String(photoresistor) + ",";
-
-    // Sound Sensor
-    state += String(sound) + ",";
-
-    // RGB Switches
-    state += String(red) + ",";
-    state += String(green) + ",";
-    state += String(blue) + ",";
-
-    // Encoder (delta)
-    state += String(encoder) + ",";
-
-    // Distance sensor
-    state += String(distance) + ",";
-    state += String(distanceButton) + ",";
-
-    // 4x4 Key Pad
-    state += String(keypad);
-    
-    return state;
+    Serial.print(photoresistor);
+    Serial.print(",");
+    Serial.print(sound);
+    Serial.print(",");
+    Serial.print(red);
+    Serial.print(",");
+    Serial.print(green);
+    Serial.print(",");
+    Serial.print(blue);
+    Serial.print(",");
+    Serial.print(encoder);
+    Serial.print(",");
+    Serial.print(distance);
+    Serial.print(",");
+    Serial.print(distanceButton);
+    Serial.print(",");
+    Serial.print(keypad);
+    Serial.println();
 }
 
-#define BUFFER_SIZE 10;
 void State::ReadState()
 {   
     DeserializeColor((Color) Serial.parseInt());
     selected = Serial.parseInt();
-
-    while(Serial.available() > 0)
-    {
-        Serial.read();
-    }
 }
 
 void State::DeserializeColor(Color color)
