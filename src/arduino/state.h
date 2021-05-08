@@ -4,6 +4,18 @@
 
 #include "Arduino.h"
 
+enum Color
+{
+    RED,
+    GREEN,
+    BLUE,
+    MAGENTA,
+    CYAN,
+    YELLOW,
+    WHITE,
+    NONE
+};
+
 class State
 {
 public:
@@ -15,8 +27,8 @@ public:
     bool photoOn;
 
     // Sound Sensor
-    // Normalized positive value [0, 1]
-    float sound;
+    // Positive raw value [0, 1024]
+    int sound;
     bool soundOn;
 
     // RGB Switches
@@ -33,7 +45,6 @@ public:
     float distance;
     // Activate distance sensor reading
     bool distanceButton;
-    byte distanceOut;
 
     // 4x4 Key Pad
     // Flags of active buttons
@@ -43,27 +54,21 @@ public:
 
     #pragma region Outputs
 
+    // Values for the RGB LED
     int red_RGB;
     int green_RGB;
     int blue_RGB;
+
+    // A shape is selected (received from app)
+    bool selected;
 
     #pragma endregion Outputs
 
     State();
     String Serialize(void);
-    void Deserialize(String);
-};
 
-enum Color
-{
-    RED,
-    GREEN,
-    BLUE,
-    MAGENTA,
-    CYAN,
-    YELLOW,
-    WHITE,
-    NONE
+    void ReadState();
+    void DeserializeColor(Color);
 };
 
 #endif

@@ -32,7 +32,7 @@
 State state = State();
 
 // Serial timing
-const int sendPeriod = 15;
+const int sendPeriod = 30;
 int sendTime = 0;
 
 #define SOUND_SPEED 0.0343
@@ -41,7 +41,6 @@ int sendTime = 0;
 unsigned long deltaTime = 0;
 unsigned long currentMillis = 0;
 unsigned long preMillis = 0;
-//const unsigned long interval = 50;
 
 #pragma region PIN SETUP IN
 
@@ -101,9 +100,11 @@ const byte DISTANCE_LED[DISTANCE_LED_COUNT] = { 38, 39, 40, 41 };
 // Photoresistor/Sound variables
 const float lightThreshold = 0.6f;
 int initialPhotoValue;
-const float soundThreshold = 0.95f;
-int initialSoundValue;
+const int soundThreshold = 400;
 movingAvg soundSensor(5);
+
+int photoLEDsOn = 0;
+unsigned long photoOnTime = 0;
 int soundLEDsOn = 0;
 unsigned long soundOnTime = 0;
 
@@ -136,10 +137,7 @@ void setup()
 
     // Sound sensor
     pinMode(SOUND_PIN, INPUT);
-    // Initial read for "environment calibration"
-    initialSoundValue = analogRead(SOUND_PIN);
     soundSensor.begin();
-    soundSensor.reading(initialSoundValue);
 
     // RGB Switches
     pinMode(RED_SWITCH_PIN, INPUT);
@@ -174,7 +172,6 @@ void setup()
     for (int i = 0; i < PHOTO_LED_COUNT; i++)
     {
         pinMode(PHOTO_LED[i], OUTPUT);
-        digitalWrite(PHOTO_LED[i], HIGH);
     }
 
     // Sound sensor LEDs (on when the photo is covered)
@@ -260,7 +257,7 @@ void ReadSoundSensor()
         soundSensor.reading(soundRead);
         int avgRead = soundSensor.getAvg();
 
-        state.sound = avgRead / (float) initialSoundValue, 0, 1;
+        state.sound = avgRead;
         state.soundOn = state.sound < soundThreshold;
     }
     else
@@ -296,14 +293,6 @@ void ReadEncoder()
         {
             state.encoder++;
         }
-
-    // Serial.print(encoderCurrentCLK);
-    // Serial.print(", ");
-    // Serial.print(encoderDT);
-    // Serial.print(": ");
-    // Serial.print(state.encoder);
-    // Serial.println("");
-
     }
 
     encoderPrevCLK = encoderCurrentCLK;
@@ -420,8 +409,17 @@ void UpdateOutputs()
 
 void UpdateSoundOutput()
 {
-    UpdateLEDSequence(SOUND_LED, SOUND_LED_COUNT, 50, state.photoOn, &soundLEDsOn, &soundOnTime);
-    SetLEDGroup(SOUND_END_LED, SOUND_END_LED_COUNT, state.soundOn);
+    bool photoAllOn = UpdateLEDSequence(PHOTO_LED, PHOTO_LED_COUNT, 50,
+        state.selected,
+        &photoLEDsOn,
+        &photoOnTime);
+
+    bool soundAllOn = UpdateLEDSequence(SOUND_LED, SOUND_LED_COUNT, 50, 
+        state.photoOn && photoAllOn,
+        &soundLEDsOn,
+        &soundOnTime);
+
+    SetLEDGroup(SOUND_END_LED, SOUND_END_LED_COUNT, state.soundOn && soundAllOn);
 }
 
 void UpdateDistanceOutput()
@@ -510,11 +508,10 @@ void SetLEDGroupToValue(const byte* array, int count, int value)
 
 void ReceiveState()
 {
-    String data = Serial.readStringUntil('\n');
-    state.Deserialize(data);
+    state.ReadState();
 }
 
 void SendState()
 {
-    //Serial.println(state.Serialize());
+    Serial.println(state.Serialize());
 }

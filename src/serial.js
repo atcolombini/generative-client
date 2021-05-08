@@ -117,9 +117,19 @@ const Serial = new class
     /* Sends data to the serial port for the Artifact to update
      * the state of the feedback outputs thet need it.
      */
-    write(color)
+    write()
     {
-        this.port.write(color + "\n")
+        if(this.port == null)
+        {
+            return;
+        }
+
+        let payload = "";
+
+        payload += Artifact.color + ",";
+        payload += (Artifact.shapeSelected ? 1 : 0);
+
+        this.port.write(payload);
     }
 }
 

@@ -34,10 +34,20 @@ String State::Serialize()
     return state;
 }
 
-void State::Deserialize(String message)
-{
-    Color color = (Color) message.toInt();
+#define BUFFER_SIZE 10;
+void State::ReadState()
+{   
+    DeserializeColor((Color) Serial.parseInt());
+    selected = Serial.parseInt();
 
+    while(Serial.available() > 0)
+    {
+        Serial.read();
+    }
+}
+
+void State::DeserializeColor(Color color)
+{
     switch(color)
     {
         case RED:

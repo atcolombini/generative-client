@@ -435,13 +435,18 @@ function selectShape (shapeID){
     unselectAllShapes();
     shapesProperties.isShapeSelected[shapeID] = true;    
     currentSelectedPieceID = shapeID;
+
+    Artifact.isShapeSelected = true;
   }
   
   else if (shapesProperties.isShapeSelected[shapeID] == true) {    
     unselectAllShapes(shapeID);
     currentSelectedPieceID = -1;
+    
+    Artifact.isShapeSelected = false;
   }    
 
+  Serial.write();
 }
 
 function unselectAllShapes(){
@@ -932,40 +937,42 @@ function artifactRBGOutput()
 
   if (keyR == false &&  keyG == false &&  keyB == false)
   { 
-    Serial.write(Color.NONE); 
+    Artifact.color = Color.NONE;
   }
   else if (keyR == true &&  keyG == false &&  keyB == false)
   {
-    Serial.write(Color.RED);
+    Artifact.color = Color.RED;
   }
   else if (keyR == true &&  keyG == true &&  keyB == false)
   {
-    Serial.write(Color.YELLOW);
+    Artifact.color = Color.YELLOW;
   }
   else if (keyR == true &&  keyG == false &&  keyB == true)
   {
-    Serial.write(Color.MAGENTA);
+    Artifact.color = Color.MAGENTA;
   }
   else if (keyR == false &&  keyG == true &&  keyB == false)
   {
-    Serial.write(Color.GREEN);
+    Artifact.color = Color.GREEN;
   }
   else if (keyR == false &&  keyG == true &&  keyB == true)
   {
-    Serial.write(Color.CYAN);
+    Artifact.color = Color.CYAN;
   }
   else if (keyR == false &&  keyG == false &&  keyB == true)
   {
-    Serial.write(Color.BLUE);
+    Artifact.color = Color.BLUE;
   }
   else if (keyR == true  &&  keyG == true  && keyB == true)
   {
-    Serial.write(Color.WHITE);
+    Artifact.color = Color.WHITE;
   }
   else if(keyR == false && keyG == false && keyB == false)
   {
-    Serial.write(Color.NONE);
+    Artifact.color = Color.NONE;
   }
+
+  Serial.write();
 
   previousKeyR = keyR;
   previousKeyG = keyG;
