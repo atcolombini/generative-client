@@ -129,7 +129,7 @@ const Serial = new class
         payload += ArtifactOutput.color + ",";
         payload += (ArtifactOutput.isShapeSelected ? 1 : 0);
 
-        console.log(payload);
+        //console.log(payload);
         this.port.write(payload);
     }
 }
