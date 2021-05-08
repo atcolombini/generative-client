@@ -22,22 +22,21 @@
  */
 
 #include "./state.h"
+#include "movingAvg.h"
 
 State state = State();
 
+// Serial timing
 const int sendPeriod = 15;
 int sendTime = 0;
 
-const unsigned long interval = 50;
+#define SOUND_SPEED 0.0343
 
-// Time management
+// General time management
 unsigned long deltaTime = 0;
 unsigned long currentMillis = 0;
 unsigned long preMillis = 0;
-
-// Constants
-const float lightThreshold = 0.6f;
-#define SOUND_SPEED 0.0343
+//const unsigned long interval = 50;
 
 #pragma region PIN SETUP IN
 
@@ -67,18 +66,6 @@ const float lightThreshold = 0.6f;
 const byte KEYS_ROW_PIN[4] = { 2, 3, 4, 5 };
 const byte KEYS_COL_PIN[4] = { 6, 7, 8, 9 };
 
-// Photoresistor variables
-int initialPhotoValue;
-
-// Encoder variables
-int encoderCurrentCLK;
-int encoderPrevCLK;
-unsigned long lastDistanceSwitchPress = 0;
-
-// Keypad variables
-unsigned int keysDebounceTime = 10;
-unsigned long keysStartTime = 0;
-
 #pragma endregion PIN SETUP IN
 
 #pragma region PIN SETUP OUT
@@ -94,14 +81,43 @@ const byte SOUND_LED[SOUND_LED_COUNT] = { 25, 26, 27};
 #define SOUND_END_LED_COUNT 2
 const byte SOUND_END_LED[SOUND_END_LED_COUNT] = { 28, 29 };
 
-#define ENCODER_LED_COUNT 8
-const byte ENCODER_LED[ENCODER_LED_COUNT] = { 30, 31, 32, 33, 34, 35, 36, 37 };
+#define ENCODER_LED_COUNT 7
+const byte ENCODER_ON_LED = 30;
+const byte ENCODER_LED[ENCODER_LED_COUNT] = { 31, 32, 33, 34, 35, 36, 37 };
 
 #define DISTANCE_LED_COUNT 4
 const byte DISTANCE_LED[DISTANCE_LED_COUNT] = { 38, 39, 40, 41 };
 
 
 #pragma endregion PIN SETUP OUT
+
+#pragma region SENSOR VARIABLES
+
+// Photoresistor/Sound variables
+const float lightThreshold = 0.6f;
+int initialPhotoValue;
+const float soundThreshold = 0.95f;
+int initialSoundValue;
+movingAvg soundSensor(5);
+int soundLEDsOn = 0;
+unsigned long soundOnTime = 0;
+
+// Encoder variables
+int encoderCurrentCLK;
+int encoderPrevCLK;
+unsigned long lastDistanceSwitchPress = 0;
+int encoderLEDsOn = 0;
+
+// Distance sensor variables
+movingAvg distanceSensor(10);
+int distanceLEDsOn = 0;
+unsigned long distanceOnTime = 0;
+
+// Keypad variables
+unsigned int keysDebounceTime = 10;
+unsigned long keysStartTime = 0;
+
+#pragma endregion SENSORS VARIABLES
 
 void setup()
 {
@@ -116,7 +132,10 @@ void setup()
 
     // Sound sensor
     pinMode(SOUND_PIN, INPUT);
-    // TODO Initial read for "environment calibration"
+    // Initial read for "environment calibration"
+    initialSoundValue = analogRead(SOUND_PIN);
+    soundSensor.begin();
+    soundSensor.reading(initialSoundValue);
 
     // RGB Switches
     pinMode(RED_SWITCH_PIN, INPUT);
@@ -132,6 +151,7 @@ void setup()
     pinMode(DISTANCE_SWITCH_PIN, INPUT);
     pinMode(DISTANCE_TRIG_PIN, OUTPUT);
     pinMode(DISTANCE_ECHO_PIN, INPUT);
+    distanceSensor.begin();
     
     // 4x4 Key pad
     for (int i = 0; i < 4; i++)
@@ -150,6 +170,7 @@ void setup()
     for (int i = 0; i < PHOTO_LED_COUNT; i++)
     {
         pinMode(PHOTO_LED[i], OUTPUT);
+        digitalWrite(PHOTO_LED[i], HIGH);
     }
 
     // Sound sensor LEDs (on when the photo is covered)
@@ -164,7 +185,11 @@ void setup()
         pinMode(SOUND_END_LED[i], OUTPUT);
     }
 
-    // Encoder LEDs (started sequentially)
+    // Encoder single LED (always on)
+    pinMode(ENCODER_ON_LED, OUTPUT);
+    digitalWrite(ENCODER_ON_LED, HIGH);
+
+    // Encoder LEDs
     for (int i = 0; i < ENCODER_LED_COUNT; i++)
     {
         pinMode(ENCODER_LED[i], OUTPUT);
@@ -185,15 +210,7 @@ void loop()
     // Read Inputs
 
     ReadPhotoresistor();
-
-    if(state.photoresistor < lightThreshold)
-    {
-        ReadSoundSensor();
-    }
-    else
-    {
-        state.sound = 0;
-    }
+    ReadSoundSensor();
 
     ReadRGBSwitches();
     ReadEncoder();
@@ -228,13 +245,25 @@ void loop()
 void ReadPhotoresistor()
 {
     state.photoresistor = analogRead(PHOTO_PIN) / (float) initialPhotoValue;
-    
-    state.photoOut = state.photoresistor < lightThreshold ? HIGH : LOW;
+    state.photoOn = state.photoresistor < lightThreshold;
 }
 
 void ReadSoundSensor()
 {
-    state.sound = analogRead(SOUND_PIN);
+    if(state.photoresistor < lightThreshold)
+    {
+        int soundRead = analogRead(SOUND_PIN);
+        soundSensor.reading(soundRead);
+        int avgRead = soundSensor.getAvg();
+
+        state.sound = avgRead / (float) initialSoundValue, 0, 1;
+        state.soundOn = state.sound < soundThreshold;
+    }
+    else
+    {
+        state.sound = 0;
+        state.soundOn = false;
+    }
 }
 
 void ReadRGBSwitches()
@@ -301,8 +330,11 @@ void ReadDistanceSensor()
         // Read pulse on the receiver
         unsigned long duration = pulseIn(DISTANCE_ECHO_PIN, HIGH);
 
+        // Store for average smoothing
+        soundSensor.reading(duration);
+
         // Calculate distance based on speed of sound
-        state.distance = (duration * SOUND_SPEED) / 2;
+        state.distance = (soundSensor.getAvg() * SOUND_SPEED) / 2;
     }
     else
     {
@@ -370,38 +402,63 @@ void SetRGBColor()
 
 void UpdateOutputs()
 {
-    UpdateDistanceLEDs();
+    UpdateSoundOutput();
+    UpdateDistanceOutput();
+    UpdateEncoderOutput();
+}
+
+void UpdateSoundOutput()
+{
+    UpdateLEDSequence(SOUND_LED, SOUND_LED_COUNT, 50, state.photoOn, &soundLEDsOn, &soundOnTime);
+    SetLEDGroup(SOUND_END_LED, SOUND_END_LED_COUNT, state.soundOn);
+}
+
+void UpdateDistanceOutput()
+{
+    UpdateLEDSequence(DISTANCE_LED, DISTANCE_LED_COUNT, 50, state.distanceButton, &distanceLEDsOn, &distanceOnTime);
+}
+
+void UpdateEncoderOutput()
+{
 
 }
 
-float currentDistanceLEDs = 0;
-float distanceLEDsTime = 0;
-
-void UpdateDistanceLEDs()
+// General method to turn a sequence of LEDs on sequentially with configurable intervals
+bool UpdateLEDSequence(const byte* LEDGroup, const int LEDCount, const int interval, bool trigger, int* LEDsOnCount, unsigned long* onTime)
 {
-    if(state.distanceButton)
+     if(trigger)
     {
-        distanceLEDsTime += deltaTime;
+        *onTime += deltaTime;
 
-        Serial.println(distanceLEDsTime);
-
-        if(distanceLEDsTime >= interval)
+        if(*onTime >= interval)
         {
-            distanceLEDsTime = 0;
-            currentDistanceLEDs = constrain(currentDistanceLEDs + 1, 0, DISTANCE_LED_COUNT);
-            SetLEDGroup(DISTANCE_LED, currentDistanceLEDs, state.distanceButton);
+            *onTime = 0;
+            *LEDsOnCount = constrain(*LEDsOnCount + 1, 0, LEDCount);
+            SetLEDGroup(LEDGroup, *LEDsOnCount, trigger);
         }
     }
     else
     {
-        currentDistanceLEDs = 0;
-        distanceLEDsTime = 0;
+        *LEDsOnCount = 0;
+        *onTime = 0;
         
-        SetLEDGroup(DISTANCE_LED, DISTANCE_LED_COUNT, LOW);
+        SetLEDGroup(LEDGroup, LEDCount, LOW);
+    }
+
+    return LEDCount == *LEDsOnCount;
+}
+
+void SetLEDGroup(const byte* array, int count, byte state)
+{
+    for(int i = 0; i < count; i++)
+    {
+        digitalWrite(array[i], state);
     }
 }
-                                                                                    
-void SetLEDGroup(const byte* array, int count, byte state)
+
+// Sets a group of LEDs ON depending on the input value:
+//
+void SetLEDGroupToValue(const byte* array, int count, int value)
 {
     for(int i = 0; i < count; i++)
     {

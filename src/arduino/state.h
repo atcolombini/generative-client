@@ -12,11 +12,12 @@ public:
     // Photoresistor
     // Normalized positive value [0, 1]
     float photoresistor;
-    byte photoOut;
+    bool photoOn;
 
     // Sound Sensor
     // Normalized positive value [0, 1]
-    int sound;
+    float sound;
+    bool soundOn;
 
     // RGB Switches
     // Booleans (on/off)
