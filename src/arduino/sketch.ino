@@ -14,7 +14,12 @@
  *  
  * Outputs (LEDs):
  *  - 44, 45, 46: PWM outputs respectively for the RGB LED
- *  - 
+ *  - 22, 23, 24: always On at the start of the Photoresistor
+ *  - 25, 26, 27: sequentially On when photoresistor is activated
+ *  - 28, 29: on when the sound goes over a threshold
+ *  - 30: always on over the encoder
+ *  - 31, 32, 33, 34, 35, 36, 37: encoder value indicators (from 0 to 7)
+ *  - 38, 39, 40, 41: on when the distance sensor button is pressed
  * 
  * The sketch gathers the input values  in a State class, which is then
  * serialized and sent over the serial port to the electron p5 application.
@@ -77,7 +82,7 @@ const byte KEYS_COL_PIN[4] = { 6, 7, 8, 9 };
 #define PHOTO_LED_COUNT 3
 const byte PHOTO_LED[PHOTO_LED_COUNT] = { 22, 23, 24 };
 #define SOUND_LED_COUNT 3
-const byte SOUND_LED[SOUND_LED_COUNT] = { 25, 26, 27};
+const byte SOUND_LED[SOUND_LED_COUNT] = { 25, 26, 27 };
 #define SOUND_END_LED_COUNT 2
 const byte SOUND_END_LED[SOUND_END_LED_COUNT] = { 28, 29 };
 
@@ -105,10 +110,9 @@ unsigned long soundOnTime = 0;
 // Encoder variables
 int encoderCurrentCLK;
 int encoderPrevCLK;
-unsigned long lastDistanceSwitchPress = 0;
-int encoderLEDsOn = 0;
 
 // Distance sensor variables
+unsigned long lastDistanceSwitchPress = 0;
 movingAvg distanceSensor(10);
 int distanceLEDsOn = 0;
 unsigned long distanceOnTime = 0;
@@ -143,8 +147,8 @@ void setup()
     pinMode(BLUE_SWITCH_PIN, INPUT);
     
     // Encoder
-    pinMode(ENCODER_DT_PIN, INPUT);
     pinMode(ENCODER_CLK_PIN, INPUT);
+    pinMode(ENCODER_DT_PIN, INPUT);
     encoderPrevCLK = digitalRead(ENCODER_CLK_PIN);
 
     // Distance Sensor
@@ -283,8 +287,8 @@ void ReadEncoder()
     if (encoderCurrentCLK != encoderPrevCLK && encoderCurrentCLK == 1)
     {
         encoderDT = digitalRead(ENCODER_DT_PIN);
-
-        if (digitalRead(ENCODER_DT_PIN) != encoderCurrentCLK )
+        
+        if (encoderDT != encoderCurrentCLK)
         {
             state.encoder--;
         }
@@ -292,8 +296,16 @@ void ReadEncoder()
         {
             state.encoder++;
         }
+
+    // Serial.print(encoderCurrentCLK);
+    // Serial.print(", ");
+    // Serial.print(encoderDT);
+    // Serial.print(": ");
+    // Serial.print(state.encoder);
+    // Serial.println("");
+
     }
-    
+
     encoderPrevCLK = encoderCurrentCLK;
 }
 
@@ -367,7 +379,6 @@ void ReadKeyPad()
                 // keypress is active low so invert to high.
                 int val = !digitalRead(KEYS_ROW_PIN[row]);
                 int selectedSwitch = col + row * 4;
-                //Serial.println("switch: " + String(col + row * 4));
 
                 // Set state using bit masks
                 if (val == HIGH)
@@ -420,7 +431,8 @@ void UpdateDistanceOutput()
 
 void UpdateEncoderOutput()
 {
-
+    int encoderLEDs = state.encoder;
+    SetLEDGroupToValue(ENCODER_LED, ENCODER_LED_COUNT, encoderLEDs);
 }
 
 // General method to turn a sequence of LEDs on sequentially with configurable intervals
@@ -460,9 +472,37 @@ void SetLEDGroup(const byte* array, int count, byte state)
 //
 void SetLEDGroupToValue(const byte* array, int count, int value)
 {
-    for(int i = 0; i < count; i++)
+    if(value > 0)
     {
-        digitalWrite(array[i], state);
+        for(int i = 0; i < count; i++)
+        {
+            if(i + 1 <= value)
+            {
+                digitalWrite(array[i], HIGH);
+            }
+            else
+            {
+                digitalWrite(array[i], LOW);
+            }
+        }
+    }
+    else if (value < 0)
+    {
+        for(int i = 0; i < count; i++)
+        {
+            if(i + 1 <= count + value)
+            {
+                digitalWrite(array[i], LOW);
+            }
+            else
+            {
+                digitalWrite(array[i], HIGH);
+            }
+        }
+    }
+    else // value == 0
+    {
+        SetLEDGroup(array, count, LOW);
     }
 }
 
@@ -476,5 +516,5 @@ void ReceiveState()
 
 void SendState()
 {
-    Serial.println(state.Serialize());
+    //Serial.println(state.Serialize());
 }
