@@ -98,7 +98,7 @@ const byte DISTANCE_LED[DISTANCE_LED_COUNT] = { 38, 39, 40, 41 };
 // Photoresistor/Sound variables
 const float lightThreshold = 0.6f;
 int initialPhotoValue;
-const int soundThreshold = 400;
+const int soundThreshold = 450;
 movingAvg soundSensor(5);
 
 int photoLEDsOn = 0;
@@ -127,6 +127,7 @@ unsigned long keysStartTime = 0;
 void setup()
 {
     Serial.begin(9600);
+    Serial.setTimeout(100);
 
     // Input Pins Setup
 
@@ -237,7 +238,7 @@ void loop()
 
     if(currentMillis - sendTime > sendPeriod)
     {
-        //state.WriteState();
+        state.WriteState();
         sendTime = currentMillis;
     }
 
@@ -303,6 +304,7 @@ void ReadEncoder()
     interrupts();
 }
 
+/*
 // void ReadEncoder()
 // {
 //     int encoderDT = 0;
@@ -326,6 +328,7 @@ void ReadEncoder()
 
 //     encoderPrevCLK = encoderCurrentCLK;
 // }
+*/
 
 void ReadDistanceSensor()
 {

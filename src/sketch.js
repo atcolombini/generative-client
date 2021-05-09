@@ -745,6 +745,8 @@ function artifactInput()
 
     artifactDistanceInput();
 
+    artifactSoundInput();
+
     artifactButtonMatrixInput();
 
     artifactRBGOutput();
@@ -772,7 +774,7 @@ function artifactButtonMatrixInput()
   let currentKey = Artifact.keypad;
   if(currentKey != 0 && !isNaN(currentKey) && currentKey != previousKey)
   {
-    console.log(currentKey);
+    //console.log(currentKey);
 
     switch(totalShapesAmount)
     {
@@ -898,19 +900,50 @@ function artifactDistanceInput()
   }
 }
 
+let soundPeriod = 500;
+let soundCount = 0;
+let lastSoundRead = 0;
+let soundThreshold = 450;
+
+//
 // Calls "modifyShapeType"
-function artifactChangeShapeInput()
-{
-  /* if the photoresistor is inside a range
-     light a LED
-     take lectures of sound
-         if sound is in 1/4 : modifyShapeType("quad")
-         if sound is in 2/4 : modifyShapeType("tri")
-         if sound is in 3/4 : modifyShapeType("circle")
-         if sound is >= 4/4 : modifyShapeType("cross")
-         
-         if sound is < 1/4  : do nothing
-   */
+function artifactSoundInput()
+{  
+  if(Artifact.sound != undefined && Artifact.sound != 0
+    && Artifact.sound < soundThreshold
+    && millis() - lastSoundRead >= soundPeriod)
+  {
+    let shape;
+
+    soundCount++;
+    switch(soundCount % 4)
+    {
+      case 0:
+      {
+        shape = "quad";
+        break;
+      }
+      case 1:
+      {
+        shape = "tri";
+        break;
+      }
+      case 2:
+      {
+        shape = "circle";
+        break;
+      }
+      case 3:
+      {
+        shape = "cross";
+        break;
+      }
+    }
+
+    modifyShapeType(currentSelectedPieceID, shape)
+
+    lastSoundRead = millis();
+  }
 }
 
 // Only set value if the switch is ON

@@ -100,7 +100,7 @@ const Serial = new class
         let i;
 
         Artifact.photocell = parseFloat(values[0]);
-        Artifact.sound = parseFloat(values[1]);
+        Artifact.sound = parseInt(values[1]);
         
         Artifact.red = values[2] == "1" ? true : false;
         Artifact.green = values[3] == "1" ? true : false;

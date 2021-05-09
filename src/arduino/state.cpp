@@ -32,7 +32,7 @@ void State::WriteState()
 void State::ReadState()
 {   
     DeserializeColor((Color) Serial.parseInt());
-    selected = Serial.parseInt();
+    selected = Serial.parseInt() == 0 ?  false : true;
 }
 
 void State::DeserializeColor(Color color)
