@@ -8,8 +8,8 @@
  *  - 15: Red switch
  *  - 16: Green switch
  *  - 17: Blue switch
- *  - 2 - 9: 4x4 button pad
- *  - 10, 11: Rotatry Encoder
+ *  - 2, 3: Rotary Encoder
+ *  - 4 - 11: 4x4 button pad
  *  - 12, 13: Distance Sensor
  *  
  * Outputs (LEDs):
@@ -56,17 +56,17 @@ unsigned long preMillis = 0;
 #define GREEN_SWITCH_PIN 16
 #define BLUE_SWITCH_PIN 17
 
-// Encoder - 10, 11
-#define ENCODER_DT_PIN 10
-#define ENCODER_CLK_PIN 11
+// Encoder - 2, 3
+#define ENCODER_CLK_PIN 2
+#define ENCODER_DT_PIN 3
 
 // Distance Sensor - 12, 13 
 #define DISTANCE_TRIG_PIN 12
 #define DISTANCE_ECHO_PIN 13
 
-// 4x4 Key pad - 2 - 9
-const byte KEYS_ROW_PIN[4] = { 2, 3, 4, 5 };
-const byte KEYS_COL_PIN[4] = { 6, 7, 8, 9 };
+// 4x4 Key pad - 4 - 11
+const byte KEYS_ROW_PIN[4] = { 4, 5, 6, 7 };
+const byte KEYS_COL_PIN[4] = { 8, 9, 10, 11 };
 
 #pragma endregion PIN SETUP IN
 
@@ -107,8 +107,9 @@ int soundLEDsOn = 0;
 unsigned long soundOnTime = 0;
 
 // Encoder variables
-int encoderCurrentCLK;
-int encoderPrevCLK;
+volatile int encoderCounter;
+//int encoderCurrentCLK;
+//int encoderPrevCLK;
 
 // Distance sensor variables
 #define SOUND_SPEED 0.0343
@@ -116,7 +117,6 @@ unsigned long lastDistanceSwitchPress = 0;
 movingAvg distanceSensor(10);
 int distanceLEDsOn = 0;
 unsigned long distanceOnTime = 0;
-
 
 // Keypad variables
 unsigned int keysDebounceTime = 10;
@@ -147,7 +147,8 @@ void setup()
     // Encoder
     pinMode(ENCODER_CLK_PIN, INPUT);
     pinMode(ENCODER_DT_PIN, INPUT);
-    encoderPrevCLK = digitalRead(ENCODER_CLK_PIN);
+    // Call OnEncoderISR when CLK goes up
+    attachInterrupt(digitalPinToInterrupt(ENCODER_CLK_PIN), OnEncoderISR, RISING);
 
     // Distance Sensor
     pinMode(DISTANCE_SWITCH_PIN, INPUT);
@@ -205,8 +206,18 @@ void setup()
 
 void loop()
 {
+    // Update deltaTime
     currentMillis = millis();
     deltaTime = currentMillis - preMillis;
+
+    // Read Serial
+    
+    if(Serial.available() > 0)
+    {
+        state.ReadState();
+        SetRGBColor();
+    }
+    
 
     // Read Inputs
 
@@ -222,19 +233,11 @@ void loop()
 
     UpdateOutputs();
 
-    // Read Serial
-    
-    if(Serial.available() > 0)
-    {
-        state.ReadState();
-        SetRGBColor();
-    }
-    
     // Send state update 
 
     if(currentMillis - sendTime > sendPeriod)
     {
-        state.WriteState();
+        //state.WriteState();
         sendTime = currentMillis;
     }
 
@@ -274,29 +277,55 @@ void ReadRGBSwitches()
     state.blue = digitalRead(BLUE_SWITCH_PIN) == HIGH ? true : false;
 }
 
+// Encoder interrupt
+// Called when ENCODER_CLK_PIN rises from LOW to HIGH
+void OnEncoderISR()
+{
+    if(digitalRead(ENCODER_DT_PIN) == LOW)
+    {
+        encoderCounter = -1;
+    }
+    else
+    {
+        encoderCounter = +1;
+    }
+}
+
+// This applies the values of the encoder read in OnEncoderISR
 void ReadEncoder()
 {
-    int encoderDT = 0;
+    noInterrupts();
 
-    encoderCurrentCLK = digitalRead(ENCODER_CLK_PIN);
+    //Serial.println(encoderCounter);
+    state.encoder += encoderCounter;
+    encoderCounter = 0;
 
-    // React to only 1 state change to avoid double count
-    if (encoderCurrentCLK != encoderPrevCLK && encoderCurrentCLK == 1)
-    {
-        encoderDT = digitalRead(ENCODER_DT_PIN);
-        
-        if (encoderDT != encoderCurrentCLK)
-        {
-            state.encoder--;
-        }
-        else
-        {
-            state.encoder++;
-        }
-    }
-
-    encoderPrevCLK = encoderCurrentCLK;
+    interrupts();
 }
+
+// void ReadEncoder()
+// {
+//     int encoderDT = 0;
+
+//     encoderCurrentCLK = digitalRead(ENCODER_CLK_PIN);
+
+//     // React to only 1 state change to avoid double count
+//     if (encoderCurrentCLK != encoderPrevCLK && encoderCurrentCLK == 1)
+//     {
+//         encoderDT = digitalRead(ENCODER_DT_PIN);
+        
+//         if (encoderDT != encoderCurrentCLK)
+//         {
+//             state.encoder--;
+//         }
+//         else
+//         {
+//             state.encoder++;
+//         }
+//     }
+
+//     encoderPrevCLK = encoderCurrentCLK;
+// }
 
 void ReadDistanceSensor()
 {
