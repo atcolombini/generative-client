@@ -87,7 +87,7 @@ function setup() {
   colorG   = color('rgb(58, 235, 52)');
   colorGB  = color('rgb(52, 235, 229)'); //cyan
   colorB   = color('rgb(52, 55, 235)');
-  colorRGB = color('rgb(0,0,0)'); //ADD HERE A COLOR THAT MODIFIES USING BEZIER
+  colorRGB = color('rgb(255,255,255)'); ///white
   
   colorSelected = color('rgb(255, 255, 255)');
   
