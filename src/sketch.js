@@ -2,8 +2,6 @@
 //*****Variables******/
 /********************/
 
-const { write } = require("original-fs");
-
 // General
 const shapesPerSide = 4;
 const canvasSize = 600;
@@ -1294,7 +1292,7 @@ function keyPressed() {
   
   //print("Red is "+ keyR + " // Green is "+ keyG + " // Blue is "+ keyB);
   }
-  
+
   /***************/
   return false; // prevent any default behaviour
 }

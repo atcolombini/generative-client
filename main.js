@@ -1,20 +1,23 @@
 // Modules to control application life and create native browser window
-const { app, BrowserWindow, Menu } = require('electron')
+const { app, BrowserWindow, Menu, globalShortcut } = require('electron')
 const path = require('path')
 
-require('electron-reload')(__dirname);
+//require('electron-reload')(__dirname);
 
 // Keep a global reference of the window object.
 let mainWindow
 
 function createWindow() {
   // Create the browser window.
+
+  let isDebug = app.commandLine.getSwitchValue("debug");
+
   mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
     // Hide menu bar to keet the functionality (e.g. F11 to fullscreen)
     autoHideMenuBar: true,
-    //fullscreen: true,
+    fullscreen: !isDebug,
     webPreferences: {
       nodeIntegration: true
     }
@@ -23,11 +26,16 @@ function createWindow() {
   // and load the index.html of the app.
   mainWindow.loadFile('index.html')
 
-  // Open the DevTools if started with "debug" argument
-  if(app.commandLine.getSwitchValue("debug"))
+  // Open the DevTools if started with "debug" argument as true
+  if(isDebug)
   {
     mainWindow.webContents.openDevTools()
   }
+
+  globalShortcut.register('ESC', () =>
+  {
+    app.exit(0);
+  });
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {

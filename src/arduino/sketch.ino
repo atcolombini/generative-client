@@ -83,8 +83,8 @@ const byte SOUND_LED[SOUND_LED_COUNT] = { 25, 26, 27 };
 #define SOUND_END_LED_COUNT 2
 const byte SOUND_END_LED[SOUND_END_LED_COUNT] = { 28, 29 };
 
-#define ENCODER_LED_COUNT 7
 const byte ENCODER_ON_LED = 30;
+#define ENCODER_LED_COUNT 7
 const byte ENCODER_LED[ENCODER_LED_COUNT] = { 31, 32, 33, 34, 35, 36, 37 };
 
 #define DISTANCE_LED_COUNT 4
