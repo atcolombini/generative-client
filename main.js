@@ -37,6 +37,11 @@ function createWindow() {
     app.exit(0);
   });
 
+  globalShortcut.register('F5', () =>
+  {
+    mainWindow.reload();
+  });
+
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {
     // Dereference the window object, usually you would store windows
