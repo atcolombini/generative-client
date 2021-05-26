@@ -285,7 +285,8 @@ function draw() {
 
   //debugs
  {
-  print (Artifact.encoder); 
+  print(Artifact.photocell);
+ // print (Artifact.encoder); 
  // print ("timeFreezed?"+timerFreezed);
  // print ("timer="+timer);  
  // print ("animationTempo="+animationTempo);

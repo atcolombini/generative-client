@@ -96,7 +96,7 @@ const byte DISTANCE_LED[DISTANCE_LED_COUNT] = { 38, 39, 40, 41 };
 #pragma region SENSOR VARIABLES
 
 // Photoresistor/Sound variables
-const float lightThreshold = 0.6f;
+const float lightThreshold = 1.05f;
 int initialPhotoValue;
 const int soundThreshold = 450;
 movingAvg soundSensor(5);
@@ -133,8 +133,6 @@ void setup()
 
     // Photoresistor
     pinMode(PHOTO_PIN, INPUT);
-    // Initial read for "environment calibration"
-    initialPhotoValue = analogRead(PHOTO_PIN);
 
     // Sound sensor
     pinMode(SOUND_PIN, INPUT);
@@ -170,7 +168,7 @@ void setup()
     pinMode(GREEN_RGB, OUTPUT);
     pinMode(BLUE_RGB, OUTPUT);
 
-    // Photoresistor LEDs (always on?)
+    // Photoresistor LEDs (selected on)
     for (int i = 0; i < PHOTO_LED_COUNT; i++)
     {
         pinMode(PHOTO_LED[i], OUTPUT);
@@ -203,6 +201,13 @@ void setup()
     {
         pinMode(DISTANCE_LED[i], OUTPUT);
     }
+
+    // Initial read for "environment calibration"
+    SetLEDGroup(PHOTO_LED, PHOTO_LED_COUNT, HIGH);
+    delay(1000);
+    initialPhotoValue = analogRead(PHOTO_PIN);
+    delay(150);
+    SetLEDGroup(PHOTO_LED, PHOTO_LED_COUNT, LOW);
 }
 
 void loop()
