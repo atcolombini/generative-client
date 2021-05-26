@@ -278,14 +278,10 @@ function draw() {
   }
   
   animate();
-  
-
-    
-
 
   //debugs
  {
-  print(Artifact.photocell);
+ // print(Artifact.photocell);
  // print (Artifact.encoder); 
  // print ("timeFreezed?"+timerFreezed);
  // print ("timer="+timer);  

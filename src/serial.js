@@ -168,6 +168,6 @@ const Color =
 
 let ArtifactOutput =
 {
-    color: Color.WHITE,
+    color: Color.NONE,
     isShapeSelected: false,
 }
