@@ -297,38 +297,14 @@ void ReadEncoder()
 {
     noInterrupts();
 
-    //Serial.println(encoderCounter);
     state.encoder += encoderCounter;
+    
+    state.encoder = constrain(state.encoder, -ENCODER_LED_COUNT, ENCODER_LED_COUNT); //clamps max. encoder counter value to -7 and 7
+   
     encoderCounter = 0;
 
     interrupts();
 }
-
-/*
-// void ReadEncoder()
-// {
-//     int encoderDT = 0;
-
-//     encoderCurrentCLK = digitalRead(ENCODER_CLK_PIN);
-
-//     // React to only 1 state change to avoid double count
-//     if (encoderCurrentCLK != encoderPrevCLK && encoderCurrentCLK == 1)
-//     {
-//         encoderDT = digitalRead(ENCODER_DT_PIN);
-        
-//         if (encoderDT != encoderCurrentCLK)
-//         {
-//             state.encoder--;
-//         }
-//         else
-//         {
-//             state.encoder++;
-//         }
-//     }
-
-//     encoderPrevCLK = encoderCurrentCLK;
-// }
-*/
 
 void ReadDistanceSensor()
 {

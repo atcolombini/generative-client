@@ -1,6 +1,6 @@
 {
     "board": "arduino:avr:mega",
-    "port": "COM3",
+    "port": "COM4",
     "sketch": "src\\arduino\\sketch.ino",
     "programmer": "arduino:avrispmkii",
     "configuration": "cpu=atmega2560"

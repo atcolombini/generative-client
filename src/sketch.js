@@ -285,6 +285,7 @@ function draw() {
 
   //debugs
  {
+  print (Artifact.encoder); 
  // print ("timeFreezed?"+timerFreezed);
  // print ("timer="+timer);  
  // print ("animationTempo="+animationTempo);
@@ -345,6 +346,7 @@ function modifyAnimationSpeed (value){
     else animationSpeed = animationSpeed + value;   
   }
   
+  //print(value);
 
 }
 
@@ -757,9 +759,19 @@ function artifactInput()
 }
 
 //Calls "modifyAnimationSpeed" 
+
+let previousEncoderValue = 0;
+
 function artifactEncoderInput()
-{
-  modifyAnimationSpeed(Artifact.encoder);
+{  
+  if (Artifact.encoder > previousEncoderValue) modifyAnimationSpeed(+animationSpeedModificationStep);
+  else if (Artifact.encoder < previousEncoderValue)  modifyAnimationSpeed (-animationSpeedModificationStep);
+
+  previousEncoderValue = Artifact.encoder;
+
+  if (Artifact.encoder == 0) modifyAnimationSpeed(0);
+
+  //modifyAnimationSpeed(Artifact.encoder);
 }
 
 let previousKey;
