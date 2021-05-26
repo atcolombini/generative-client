@@ -448,7 +448,10 @@ function selectShape (shapeID){
     ArtifactOutput.isShapeSelected = false;
   }    
 
-  Serial.write();
+  if(IsArtifactPresent()) 
+  {
+    Serial.write();
+  }
 }
 
 function unselectAllShapes(){
@@ -737,12 +740,16 @@ function showSelectionGizmo(xPos, yPos){
 
 /*** Artifact Inputs ***/
 
-function artifactInput()
+function IsArtifactPresent()
 {
-  //if(Artifact.length !== 0)
-  if(!Artifact ||
-    !(Object.keys(Artifact).length === 0) ||
-    !(Artifact.constructor == Object))
+  return !Artifact ||
+  !(Object.keys(Artifact).length === 0) ||
+  !(Artifact.constructor == Object);
+}
+
+function artifactInput()
+{  
+  if(IsArtifactPresent())
   {    
     artifactRGBInput();
     
