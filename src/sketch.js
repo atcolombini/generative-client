@@ -329,8 +329,6 @@ function animate() {
 
 function modifyAnimationSpeed (value){
   
-  //ADD HERE A COOLDOWN TO IMPROVE FEEL
-
   if (value > 0){    
     if (animationSpeed >= maxAnimationSpeed-animationSpeedModificationStep) animationSpeed = maxAnimationSpeed;
     else if (animationSpeed == -animationSpeedModificationStep) animationSpeed = 0;
