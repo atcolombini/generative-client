@@ -2,6 +2,8 @@
 //*****Variables******/
 /********************/
 
+let isUsingSerial = true;
+
 // General
 const shapesPerSide = 4;
 const canvasSize = 600;
@@ -58,13 +60,12 @@ var currentSelectedPieceID;
 //RBG input
   var keyR;
   var keyG;
-  var keyB;
+  var keyB; 
 
 //Properties of shapes. Will be used later
   var shapesProperties;
 
-/*** GIZMOS ****/
-//Selection Gizmo
+/*** GIZMOS ****///Selection Gizmo
 var selectionGizmoSize;
 var selectionGizmoMinSize;
 var selectionGizmoMaxSize
@@ -185,14 +186,17 @@ function setup() {
   Serial.begin(9600);
 }
 
-function draw() {  
-  Serial.read();
+function draw() {
+
+  if(isUsingSerial)
+  {
+    Serial.read();
+    // checks the inputs of the artifact every frame
+    artifactInput();
+  }
 
   //inputs that require to be check every frame 
   
-  // checks the inputs of the artifact every frame
-  artifactInput();
-
   // used as keyboard method to switch shape
   // Calls "modifyShapeType"
   if (mouseIsPressed && currentSelectedPieceID>=0){
@@ -735,8 +739,11 @@ function showSelectionGizmo(xPos, yPos){
 
 function artifactInput()
 {
-  if(Artifact.length != 0)
-  {
+  //if(Artifact.length !== 0)
+  if(!Artifact ||
+    !(Object.keys(Artifact).length === 0) ||
+    !(Artifact.constructor == Object))
+  {    
     artifactRGBInput();
     
     artifactEncoderInput();
@@ -1013,6 +1020,8 @@ function artifactRBGOutput()
 /*** Desktop Controls ***/
 
 function mouseWheel(event){ 
+  isUsingSerial = false;
+
   //Substitutes artifactWheelInput
   //calls "modifyAnimationSpeed"
   
@@ -1025,7 +1034,7 @@ function mouseWheel(event){
 }
 
 function keyPressed() {
-  
+  isUsingSerial = false;
 // Calls "modifyTotalAmountOfShapes"
 // Substitutes artifactDistanceInput
   {
@@ -1271,7 +1280,6 @@ function keyPressed() {
   Keyboard     ShapeID         KeyCodes
   R  G  B  ->  z   x   c   ->  90   88   67
   */
-    
     if (keyCode == 90) {
       
       if (keyR == false)     keyR = true;
