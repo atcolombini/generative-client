@@ -115,7 +115,7 @@ const byte DISTANCE_LED[DISTANCE_LED_COUNT] = { 38, 39, 40, 41 };
 #pragma region SENSOR VARIABLES
 
 // Photoresistor/Sound variables
-const float lightThreshold = 1.05f;
+const float lightThreshold = 0.95f;
 int initialPhotoValue;
 const int soundThreshold = 450;
 movingAvg soundSensor(5);

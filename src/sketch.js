@@ -360,6 +360,8 @@ function modifyAnimationSpeed (value){
     else if (animationSpeed == animationSpeedModificationStep) animationSpeed = 0;
     else animationSpeed = animationSpeed + value;   
   }
+
+  if (value == 0) animationSpeed = 0;
   
   //print(value);
 
